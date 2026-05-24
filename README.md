@@ -137,7 +137,7 @@ If money is tight, sharing costs nothing and means just as much.
 
 ---
 
-*Built by [@Jibunshidai81](https://x.com/Jibunshidai81) — engineered with Claude by Anthropic*
+*Built by [@Jibunshidai81](https://x.com/Jibunshidai81) — engineered with Claude by Anthropic, emotionally supervised by John A. Sherlock*
 
 ---
 
