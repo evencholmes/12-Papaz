@@ -1,0 +1,3605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<title>Papaz - The ExamOS</title>
+<style>
+/* RESET */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
+html,body{height:100%;overflow:hidden;font-family:'Georgia',serif;}
+body{background:var(--bg);color:var(--text);font-size:var(--fs);transition:background 0.3s,color 0.3s;}
+
+/* ── DARK MODE BASE ── */
+body{
+  --bg-raw:#0a0a0b;
+  --card-raw:#18181d;
+  --card2-raw:#1e1e25;
+  --bg2-raw:#111116;
+  --bg:var(--bg-raw);
+  --bg2:var(--bg2-raw);
+  --card:var(--card-raw);
+  --card2:var(--card2-raw);
+  --border:#2a2a33;
+  --border2:#333340;
+  --text:#e8e6e1;
+  --text2:#b0aea9;
+  --muted:#5a5a66;
+  --green:#b8ff6e;
+  --green-bg:rgba(184,255,110,0.08);
+  --amber:#f5a623;
+  --amber-bg:rgba(245,166,35,0.08);
+  --red:#e05a5a;
+  --red-bg:rgba(224,90,90,0.08);
+  --radius:12px;
+  --radius-sm:8px;
+  --fs:15px;
+  --accent:#c0c0c0;
+  --accent-dim:#888;
+  --accent-bg:rgba(192,192,192,0.10);
+  --accent-text:#0a0a0b;
+  --tint-bg:color-mix(in srgb,var(--accent) 7.5%,#0a0a0b);
+  --tint-card:color-mix(in srgb,var(--accent) 7.5%,#18181d);
+  --tint-card2:color-mix(in srgb,var(--accent) 7.5%,#1e1e25);
+}
+body{--bg:var(--tint-bg);--card:var(--tint-card);--card2:var(--tint-card2);}
+
+/* ── LIGHT MODE ── */
+body.light{
+  --bg-raw:#f4f3f0;
+  --card-raw:#ffffff;
+  --card2-raw:#f0efec;
+  --bg2-raw:#eceae6;
+  --border:#d0cfc9;
+  --border2:#c0bfb8;
+  --text:#1a1a1e;
+  --text2:#4a4a52;
+  --muted:#8a8880;
+  --green:#3a7000;
+  --green-bg:rgba(58,112,0,0.08);
+  --amber:#b86800;
+  --amber-bg:rgba(184,104,0,0.08);
+  --red:#c03030;
+  --red-bg:rgba(192,48,48,0.08);
+  --tint-bg:color-mix(in srgb,var(--accent) 7.5%,#f4f3f0);
+  --tint-card:color-mix(in srgb,var(--accent) 7.5%,#ffffff);
+  --tint-card2:color-mix(in srgb,var(--accent) 7.5%,#f0efec);
+}
+
+/* ── ACCENT THEMES ── */
+body[data-accent="silver"]{--accent:#c0c0c0;--accent-dim:#888;--accent-bg:rgba(192,192,192,0.10);--accent-text:#0a0a0b;}
+body[data-accent="gold"]{--accent:#f5c842;--accent-dim:#c9960a;--accent-bg:rgba(245,200,66,0.12);--accent-text:#0a0a0b;}
+body[data-accent="blue"]{--accent:#4a9eff;--accent-dim:#2266cc;--accent-bg:rgba(74,158,255,0.12);--accent-text:#ffffff;}
+body[data-accent="fluffy"]{--accent:#ff6eb8;--accent-dim:#cc2288;--accent-bg:rgba(255,110,184,0.12);--accent-text:#ffffff;}
+
+/* ── CHROMATIC RADIUS OVERRIDES ── */
+body[data-accent="blue"] .card,
+body[data-accent="blue"] .modal-box,
+body[data-accent="blue"] .tree-row,
+body[data-accent="blue"] .exam-card,
+body[data-accent="blue"] .note-card,
+body[data-accent="blue"] .btn,
+body[data-accent="blue"] .input,
+body[data-accent="blue"] #log-sheet-inner,
+body[data-accent="blue"] #del-popup-box,
+body[data-accent="blue"] .stat-card{border-radius:0!important;}
+
+body[data-accent="fluffy"] .tree-row,
+body[data-accent="fluffy"] .tree-item{border-radius:24px;overflow:hidden;margin-bottom:3px;}
+body[data-accent="fluffy"] .card{border-radius:20px;}
+body[data-accent="fluffy"] .note-card{border-radius:20px;}
+body[data-accent="fluffy"] .exam-card{border-radius:20px;}
+
+/* ── FONT SIZES ── */
+body[data-fs="s"]{--fs:13px;}
+body[data-fs="m"]{--fs:15px;}
+body[data-fs="l"]{--fs:18px;}
+body[data-fs="xl"]{--fs:21px;}
+
+/* ── PANIC MODE ── */
+body.panic-mode{box-shadow:inset 0 0 80px rgba(224,90,90,0.18);}
+body.panic-mode #pages{background:rgba(224,90,90,0.04);}
+
+/* ── LAYOUT ── */
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh;padding-top:env(safe-area-inset-top);}
+#pages{flex:1;overflow:hidden;position:relative;}
+
+.page{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;display:none;pointer-events:none;padding:0 0 calc(64px + env(safe-area-inset-bottom) + 16px) 0;-webkit-overflow-scrolling:touch;}
+.page.active{display:block;pointer-events:all;}
+/* slide classes removed - crossfade only */
+
+/* ── TAB BAR ── */
+#tabbar{position:fixed;bottom:0;left:0;right:0;height:calc(64px + env(safe-area-inset-bottom));background:var(--card);border-top:1px solid var(--border);display:flex;align-items:flex-start;z-index:100;}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;cursor:pointer;color:var(--muted);transition:color 0.15s;font-size:0.6em;letter-spacing:0.05em;text-transform:uppercase;padding:6px 0;height:64px;}
+
+/* ── SCROLL FAB ── */
+.scroll-fab{position:fixed;right:18px;width:52px;height:52px;border-radius:50%;background:var(--accent);color:var(--accent-text);border:none;font-size:1.5em;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:90;box-shadow:0 4px 16px rgba(0,0,0,0.35);transition:opacity 0.2s,transform 0.2s;}
+.scroll-fab.hidden{opacity:0;pointer-events:none;transform:scale(0.7);}
+#fab-plan{bottom:calc(80px + env(safe-area-inset-bottom));}
+#fab-vault{bottom:calc(80px + env(safe-area-inset-bottom));}
+.tab-btn .tab-icon{font-size:1.4em;line-height:1;}
+.tab-btn.active{color:var(--accent);}
+
+/* ── COMMON ── */
+.page-header{padding:20px 16px 8px;font-size:1.3em;font-weight:700;letter-spacing:-0.02em;color:var(--text);}
+.section-label{font-size:0.7em;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);padding:16px 16px 6px;}
+.card{margin:0 12px 10px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;}
+.card-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+.card-row:last-child{border-bottom:none;}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:var(--radius-sm);font-size:0.9em;font-weight:600;border:none;cursor:pointer;transition:opacity 0.15s,transform 0.1s;}
+.btn:active{transform:scale(0.97);}
+.btn-primary{background:var(--accent);color:var(--accent-text);}
+.btn-ghost{background:var(--card2);color:var(--text);border:1px solid var(--border);}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid var(--red);}
+.btn-warn{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber);}
+.btn-full{width:100%;display:flex;}
+
+.pill{display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;border-radius:20px;font-size:0.75em;font-weight:600;border:1px solid var(--border);color:var(--text2);background:var(--card2);cursor:pointer;transition:all 0.15s;}
+.pill.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--border2);color:var(--text);padding:10px 20px;border-radius:var(--radius-sm);font-size:0.85em;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999;white-space:nowrap;}
+#toast.show{opacity:1;}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity 0.2s;padding:20px;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal-box{background:var(--card);border:1px solid var(--border2);border-radius:var(--radius);width:100%;max-width:400px;max-height:85vh;overflow-y:auto;transform:translateY(20px);transition:transform 0.2s;}
+.modal-overlay.open .modal-box{transform:translateY(0);}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--border);font-weight:700;font-size:1.05em;}
+.modal-body{padding:16px;}
+.modal-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;flex-direction:column;}
+.modal-footer-row{display:flex;gap:8px;}
+.modal-close{background:none;border:none;color:var(--muted);font-size:1.4em;cursor:pointer;padding:4px;}
+
+/* ── INPUTS ── */
+.input{width:100%;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:0.95em;font-family:inherit;outline:none;transition:border-color 0.15s;-webkit-user-select:text;user-select:text;}
+.input:focus{border-color:var(--accent);}
+.input::placeholder{color:var(--muted);}
+textarea.input{resize:vertical;min-height:80px;}
+.input-label{font-size:0.78em;color:var(--muted);margin-bottom:5px;letter-spacing:0.05em;text-transform:uppercase;}
+.input-group{margin-bottom:14px;}
+
+/* ── SLIDERS ── */
+.slider-group{margin-bottom:16px;}
+.slider-row{display:flex;align-items:center;gap:10px;}
+.slider-track{flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:var(--border2);outline:none;cursor:pointer;}
+.slider-track::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg);box-shadow:0 0 0 2px var(--accent);}
+.slider-track::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg);}
+.slider-val{min-width:24px;text-align:center;font-weight:700;font-size:1em;color:var(--accent);}
+.slider-dots{display:flex;justify-content:space-between;padding:0 2px;margin-top:2px;}
+.slider-dot-label{font-size:0.6em;color:var(--muted);}
+
+/* ── DRUM PICKER ── */
+.drum-wrap{display:flex;align-items:center;justify-content:center;gap:8px;padding:20px 0;}
+.drum{width:64px;height:104px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg2);overflow:hidden;position:relative;cursor:ns-resize;touch-action:none;}
+.drum-track{position:absolute;left:0;right:0;will-change:transform;}
+.drum-cell{width:64px;height:52px;display:flex;align-items:center;justify-content:center;font-size:2em;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;}
+.drum-cell.dim{color:var(--muted);font-size:1.4em;}
+.drum::before{content:'';position:absolute;top:0;left:0;right:0;height:36px;background:linear-gradient(to bottom,var(--bg2),transparent);z-index:2;pointer-events:none;}
+.drum::after{content:'';position:absolute;bottom:0;left:0;right:0;height:36px;background:linear-gradient(to top,var(--bg2),transparent);z-index:2;pointer-events:none;}
+.drum-line{position:absolute;top:50%;left:8px;right:8px;height:52px;transform:translateY(-50%);border-top:1px solid var(--accent);border-bottom:1px solid var(--accent);border-radius:4px;z-index:3;pointer-events:none;}
+.drum-label{font-size:0.75em;color:var(--muted);text-align:center;margin-top:4px;text-transform:uppercase;letter-spacing:0.08em;}
+
+/* ── HEATMAP ── */
+.heatmap{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:0 12px;}
+.heat-cell{aspect-ratio:1;border-radius:4px;background:var(--border);cursor:pointer;transition:transform 0.1s;}
+.heat-cell:active{transform:scale(0.92);}
+.heat-cell[data-h="1"]{background:color-mix(in srgb,var(--accent) 20%,transparent);}
+.heat-cell[data-h="2"]{background:color-mix(in srgb,var(--accent) 40%,transparent);}
+.heat-cell[data-h="3"]{background:color-mix(in srgb,var(--accent) 60%,transparent);}
+.heat-cell[data-h="4"]{background:color-mix(in srgb,var(--accent) 80%,transparent);}
+.heat-cell[data-h="5"]{background:var(--accent);}
+
+/* ── TREE ── */
+.tree-item{border-bottom:1px solid var(--border);}
+.tree-row{display:flex;align-items:center;gap:8px;padding:12px;cursor:pointer;transition:background 0.1s;}
+.tree-row:active{background:var(--card2);}
+.tree-indent-0{padding-left:12px;}
+.tree-indent-1{padding-left:28px;}
+.tree-indent-2{padding-left:44px;}
+.tree-indent-3{padding-left:60px;}
+.tree-toggle{width:18px;height:18px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.75em;flex-shrink:0;}
+.tree-title{flex:1;font-size:0.95em;color:var(--text);padding:2px 0;}
+.tree-conf{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.tree-tick{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.8em;color:transparent;transition:all 0.15s;}
+.tree-tick.ticked{border-color:var(--green);background:var(--green-bg);color:var(--green);}
+.tree-children{display:none;}
+.tree-children.open{display:block;}
+
+/* ── PROGRESS ── */
+.progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--accent);border-radius:3px;transition:width 0.4s ease;}
+
+/* ── STATS ROW ── */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 12px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 8px;text-align:center;}
+.stat-num{font-size:1.6em;font-weight:700;color:var(--accent);line-height:1;}
+.stat-lbl{font-size:0.65em;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:4px;}
+
+/* ── MOM BANNER ── */
+#mom-banner{margin:12px;border-radius:var(--radius);padding:14px 16px;border:1px solid var(--border);background:var(--card);transition:border-color 0.3s,background 0.3s;}
+#mom-banner.mood-ok{border-color:var(--green);background:var(--green-bg);}
+#mom-banner.mood-warn{border-color:var(--amber);background:var(--amber-bg);}
+#mom-banner.mood-mad{border-color:var(--red);background:var(--red-bg);}
+#mom-banner.mood-dead{border-color:var(--red);background:var(--red-bg);animation:pulse-red 1.5s infinite;}
+@keyframes pulse-red{0%,100%{box-shadow:0 0 0 0 rgba(224,90,90,0.3);}50%{box-shadow:0 0 0 8px rgba(224,90,90,0);}}
+#mom-name{font-size:0.72em;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:4px;}
+#mom-msg{font-size:0.95em;color:var(--text);line-height:1.4;}
+
+/* ── ONBOARDING ── */
+#onboarding{position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#onboarding.hidden{display:none;}
+.ob-inner{flex:1;display:flex;flex-direction:column;justify-content:center;padding:40px 24px 60px;max-width:480px;margin:0 auto;width:100%;}
+.ob-logo{font-size:2.4em;font-weight:900;letter-spacing:-0.03em;color:var(--accent);margin-bottom:6px;}
+.ob-tagline{font-size:0.9em;color:var(--muted);margin-bottom:40px;}
+.ob-step{margin-bottom:24px;}
+.ob-step-label{font-size:0.72em;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px;}
+.ob-type-row{display:flex;gap:8px;flex-wrap:wrap;}
+.ob-type-btn{flex:1;min-width:80px;padding:12px 8px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.9em;font-weight:600;cursor:pointer;text-align:center;transition:all 0.15s;}
+.ob-type-btn.selected{border-color:var(--accent);background:var(--accent-bg);color:var(--accent);}
+.ob-enter{width:100%;padding:16px;border-radius:var(--radius);background:var(--accent);color:var(--accent-text);font-size:1.05em;font-weight:700;border:none;cursor:pointer;margin-top:16px;transition:opacity 0.15s,transform 0.1s;}
+.ob-enter:active{transform:scale(0.98);}
+
+/* ── LOG SHEET ── */
+#log-sheet{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.75);display:flex;flex-direction:column;justify-content:flex-end;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+#log-sheet.open{opacity:1;pointer-events:all;}
+#log-sheet-inner{background:var(--card);border-radius:var(--radius) var(--radius) 0 0;border-top:1px solid var(--border2);max-height:85vh;overflow-y:auto;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);}
+#log-sheet.open #log-sheet-inner{transform:translateY(0);}
+.sheet-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:12px auto 0;}
+.sheet-title{padding:12px 16px 8px;font-weight:700;font-size:1.05em;}
+.topic-chip{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s;}
+.topic-chip:active{background:var(--card2);}
+.topic-chip-check{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:0.8em;color:transparent;flex-shrink:0;transition:all 0.15s;}
+.topic-chip-check.on{border-color:var(--green);background:var(--green-bg);color:var(--green);}
+.topic-chip-title{flex:1;font-size:0.95em;color:var(--text);}
+.topic-chip-code{font-size:0.72em;color:var(--muted);}
+
+/* ── DELETE POPUP ── */
+#del-popup{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;padding:24px;}
+#del-popup.open{opacity:1;pointer-events:all;}
+#del-popup-box{background:var(--card);border:1px solid var(--border2);border-radius:var(--radius);padding:24px;width:100%;max-width:320px;text-align:center;}
+#del-popup-title{font-weight:700;font-size:1.05em;margin-bottom:8px;}
+#del-popup-sub{font-size:0.85em;color:var(--muted);margin-bottom:20px;line-height:1.4;}
+#del-popup-btns{display:flex;flex-direction:column;gap:8px;}
+#del-popup-btns-row{display:flex;gap:8px;}
+
+/* ── SETTINGS ── */
+.privacy-banner{margin:12px;padding:12px 14px;border-radius:var(--radius);background:var(--amber-bg);border:1px solid var(--amber);display:flex;align-items:center;gap:10px;font-size:0.78em;color:var(--amber);font-weight:600;letter-spacing:0.05em;}
+.privacy-dot{width:8px;height:8px;border-radius:50%;background:var(--amber);flex-shrink:0;animation:pulse-amber 1.5s infinite;}
+@keyframes pulse-amber{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;}
+.toggle{width:44px;height:26px;border-radius:13px;border:none;cursor:pointer;background:var(--border2);position:relative;transition:background 0.2s;flex-shrink:0;}
+.toggle.on{background:var(--accent);}
+.toggle-knob{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform 0.2s;}
+.toggle.on .toggle-knob{transform:translateX(18px);}
+.swatch-row{display:flex;gap:8px;margin-top:10px;}
+.swatch{width:36px;height:36px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color 0.15s,transform 0.1s;}
+.swatch:active{transform:scale(0.92);}
+.swatch.active{border-color:var(--text);}
+.swatch-silver{background:linear-gradient(135deg,#e0e0e0,#888);}
+.swatch-gold{background:linear-gradient(135deg,#f5c842,#b8860b);}
+.swatch-blue{background:linear-gradient(135deg,#4a9eff,#1a4aaa);}
+.swatch-fluffy{background:linear-gradient(135deg,#ff6eb8,#cc2288);}
+.perm-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.perm-dot.green{background:var(--green);}
+.perm-dot.amber{background:var(--amber);animation:pulse-amber 1.5s infinite;}
+.perm-dot.red{background:var(--red);}
+.credits-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.credits-row:last-child{border-bottom:none;}
+.credits-avatar{width:38px;height:38px;border-radius:50%;background:var(--accent-bg);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:1.2em;flex-shrink:0;}
+.credits-name{font-weight:700;font-size:0.95em;}
+.credits-role{font-size:0.75em;color:var(--muted);}
+.patreon-card{margin:0 12px 10px;padding:18px;background:var(--card);border:1px solid var(--amber);border-radius:var(--radius);animation:pulse-patreon 2s infinite;}
+@keyframes pulse-patreon{0%,100%{box-shadow:0 0 0 0 rgba(245,166,35,0.2);}50%{box-shadow:0 0 0 6px rgba(245,166,35,0);}}
+.patreon-label{font-size:0.65em;text-transform:uppercase;letter-spacing:0.12em;color:var(--amber);margin-bottom:6px;}
+.patreon-title{font-size:1.1em;font-weight:700;margin-bottom:8px;}
+.patreon-body{font-size:0.85em;color:var(--text2);line-height:1.5;margin-bottom:14px;}
+.patreon-spread{background:var(--amber-bg);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:14px;font-size:0.82em;color:var(--amber);line-height:1.4;}
+.patreon-btn{display:block;width:100%;padding:12px;text-align:center;background:var(--amber);color:#0a0a0b;font-weight:700;border-radius:var(--radius-sm);border:none;cursor:pointer;font-size:0.95em;text-decoration:none;transition:opacity 0.15s;}
+.patreon-btn:active{opacity:0.8;}
+
+/* ── THRESHOLD EDITOR ── */
+.thresh-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+.thresh-row:last-child{border-bottom:none;}
+.thresh-label{font-size:0.85em;color:var(--text2);}
+.thresh-input{width:52px;padding:6px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:0.9em;font-weight:700;text-align:center;-webkit-user-select:text;user-select:text;outline:none;}
+.thresh-input:focus{border-color:var(--accent);}
+.thresh-preset-row{display:flex;gap:6px;padding:8px 0;}
+
+/* ── EXAM CARDS ── */
+.exam-card{margin:0 12px 8px;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);transition:border-color 0.3s;}
+.exam-card.passed-unscored{border-color:var(--red);animation:pulse-red 1.5s infinite;}
+.exam-score-inputs{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:none;}
+.exam-card.passed-unscored .exam-score-inputs{display:block;}
+.exam-title{font-weight:700;font-size:0.95em;margin-bottom:4px;}
+.exam-meta{font-size:0.78em;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;}
+.exam-countdown{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:0.72em;font-weight:700;}
+.exam-countdown.soon{background:var(--red-bg);color:var(--red);}
+.exam-countdown.ok{background:var(--green-bg);color:var(--green);}
+.exam-countdown.warn{background:var(--amber-bg);color:var(--amber);}
+.exam-countdown.passed{background:var(--red-bg);color:var(--red);}
+
+/* ── VAULT NOTES ── */
+.note-card{margin:0 12px 8px;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);transition:transform 0.3s,opacity 0.3s;}
+.note-card.pinned{border-color:var(--accent);order:-1;}
+.note-card.sinking{animation:sink-in 0.4s ease forwards;}
+@keyframes sink-in{0%{opacity:0;transform:translateY(-16px);}100%{opacity:1;transform:translateY(0);}}
+.note-tag{display:inline-flex;padding:2px 8px;border-radius:12px;font-size:0.68em;font-weight:700;letter-spacing:0.06em;background:var(--accent-bg);color:var(--accent);margin-bottom:6px;}
+.note-title{font-weight:700;font-size:0.95em;margin-bottom:4px;}
+.note-body{font-size:0.85em;color:var(--text2);line-height:1.5;}
+.note-meta{font-size:0.72em;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center;}
+.note-pin-btn{background:none;border:none;cursor:pointer;font-size:1em;color:var(--muted);padding:2px 4px;}
+.note-pin-btn.pinned{color:var(--accent);}
+
+/* ── VAULT SORT BAR ── */
+.sort-bar{display:flex;align-items:center;justify-content:space-between;padding:0 12px 8px;}
+.sort-bar-label{font-size:0.72em;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
+.sort-toggle{display:flex;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;}
+.sort-btn{padding:6px 12px;font-size:0.75em;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;transition:all 0.15s;}
+.sort-btn.active{background:var(--accent);color:var(--accent-text);}
+
+/* ── WARN FLAGS ── */
+.warn-flag{margin:0 12px 8px;padding:12px 14px;background:var(--red-bg);border:1px solid var(--red);border-radius:var(--radius-sm);display:flex;align-items:flex-start;gap:10px;}
+.warn-flag-icon{font-size:1em;flex-shrink:0;margin-top:1px;}
+.warn-flag-text{font-size:0.85em;color:var(--text);line-height:1.4;}
+.warn-flag-title{font-weight:700;color:var(--red);margin-bottom:2px;}
+
+/* ── DASHBOARD SPECIALS ── */
+#study-now-btn{margin:0 12px 10px;padding:14px;background:var(--accent-bg);border:1.5px solid var(--accent);border-radius:var(--radius);text-align:center;cursor:pointer;transition:background 0.15s,transform 0.1s;}
+#study-now-btn:active{transform:scale(0.98);}
+#study-now-btn .sn-label{font-size:0.7em;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);margin-bottom:4px;}
+#study-now-btn .sn-result{font-size:0.95em;font-weight:700;color:var(--text);}
+#hour-tap{margin:0 12px;padding:18px;background:var(--card);border:1px solid var(--border2);border-radius:var(--radius);text-align:center;cursor:pointer;transition:background 0.15s,transform 0.1s;position:relative;overflow:hidden;}
+#hour-tap:active{transform:scale(0.97);}
+#hour-tap .ht-label{font-size:0.72em;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px;}
+#hour-tap .ht-hours{font-size:2.8em;font-weight:900;color:var(--accent);line-height:1;}
+#hour-tap .ht-sub{font-size:0.75em;color:var(--muted);margin-top:4px;}
+.plus-anim{position:absolute;font-size:1.4em;font-weight:900;color:var(--accent);pointer-events:none;animation:float-up 0.8s ease forwards;}
+@keyframes float-up{0%{opacity:1;transform:translateY(0);}100%{opacity:0;transform:translateY(-40px);}}
+
+/* ── PULL TO REFRESH ── */
+.ptr-indicator{position:absolute;top:0;left:50%;transform:translateX(-50%);width:32px;height:32px;border-radius:50%;background:var(--card2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:0.9em;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:50;margin-top:8px;}
+.ptr-indicator.visible{opacity:1;}
+.ptr-indicator.spinning{animation:ptr-spin 0.6s linear infinite;}
+@keyframes ptr-spin{from{transform:translateX(-50%) rotate(0deg);}to{transform:translateX(-50%) rotate(360deg);}}
+.search-bar{margin:0 12px 10px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);display:flex;align-items:center;gap:8px;}
+.search-bar input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:0.95em;font-family:inherit;-webkit-user-select:text;user-select:text;}
+.search-bar input::placeholder{color:var(--muted);}
+
+/* ── CUSTOM NOTIFY DATE ROW ── */
+.notify-dates-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.notify-date-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:20px;font-size:0.75em;font-weight:600;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent);}
+.notify-date-remove{background:none;border:none;color:var(--accent);cursor:pointer;font-size:0.9em;padding:0;line-height:1;}
+.notify-add-btn{width:28px;height:28px;border-radius:50%;background:var(--card2);border:1px solid var(--border);color:var(--text);font-size:1.1em;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
+/* ── COVERAGE CHECKBOXES ── */
+.coverage-list{max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:6px;}
+.coverage-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--border);}
+.coverage-item:last-child{border-bottom:none;}
+.coverage-item input[type="checkbox"]{-webkit-user-select:none;user-select:none;accent-color:var(--accent);width:16px;height:16px;cursor:pointer;}
+.coverage-item label{font-size:0.85em;color:var(--text);cursor:pointer;-webkit-user-select:text;user-select:text;}
+
+/* ── TAG SUGGESTIONS ── */
+.tag-suggestions{background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:4px;overflow:hidden;display:none;}
+.tag-suggestion-item{padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer;font-size:0.9em;transition:background 0.1s;}
+.tag-suggestion-item:last-child{border-bottom:none;}
+.tag-suggestion-item:active{background:var(--card);}
+</style>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div id="onboarding">
+  <div class="ob-inner">
+    <div class="ob-logo">Papaz</div>
+    <div class="ob-tagline">The ExamOS - Your academic command center</div>
+    <div class="ob-step">
+      <div class="ob-step-label">Your name</div>
+      <input class="input" id="ob-name" type="text" placeholder="Your name" maxlength="30" style="text-align:center;"/>
+    </div>
+    <div class="ob-step">
+      <div class="ob-step-label">What are you studying?</div>
+      <input class="input" id="ob-subject" type="text" placeholder="Medicine, Law, Computer Science..." maxlength="60" style="text-align:center;"/>
+    </div>
+    <div class="ob-step">
+      <div class="ob-step-label">How long is your course?</div>
+      <div style="display:flex;gap:10px;">
+        <div style="flex:1;text-align:center;">
+          <input class="input" id="ob-years" type="number" min="0" max="10" placeholder="0" style="text-align:center;"/>
+          <div style="font-size:0.72em;color:var(--muted);margin-top:4px;text-align:center;">Years</div>
+        </div>
+        <div style="flex:1;text-align:center;">
+          <input class="input" id="ob-months" type="number" min="0" max="11" placeholder="0" style="text-align:center;"/>
+          <div style="font-size:0.72em;color:var(--muted);margin-top:4px;text-align:center;">Months</div>
+        </div>
+      </div>
+    </div>
+    <div class="ob-step">
+      <div class="ob-step-label">I am a...</div>
+      <div class="ob-type-row">
+        <button class="ob-type-btn" data-type="school" onclick="selectUserType(this)">School</button>
+        <button class="ob-type-btn" data-type="college" onclick="selectUserType(this)">College</button>
+        <button class="ob-type-btn" data-type="professional" onclick="selectUserType(this)">Professional</button>
+      </div>
+    </div>
+    <button class="ob-enter" onclick="finishOnboarding()">Enter Papaz</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none;">
+  <div id="pages">
+
+    <!-- TAB 1: DASHBOARD -->
+    <div class="page" id="page-dash">
+      <div class="page-header">Dashboard</div>
+      <div id="mom-banner">
+        <div id="mom-name">PAPAZ SAYS</div>
+        <div id="mom-msg">Loading...</div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="stat-coverage">0%</div><div class="stat-lbl">Coverage</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-hours">0h</div><div class="stat-lbl">Hours</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-streak">0</div><div class="stat-lbl">Streak</div></div>
+      </div>
+      <div style="padding:10px 12px 0;">
+        <div class="progress-bar"><div class="progress-fill" id="dash-progress" style="width:0%"></div></div>
+      </div>
+      <div id="next-exam-banner" style="display:none;margin:10px 12px 0;">
+        <div class="exam-card" style="margin:0;border-color:var(--amber);">
+          <div style="font-size:0.72em;text-transform:uppercase;letter-spacing:0.08em;color:var(--amber);margin-bottom:4px;">NEXT EXAM</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="exam-title" id="next-exam-title">-</div>
+            <div class="exam-countdown warn" id="next-exam-days">-</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:10px;">
+        <div id="study-now-btn" onclick="showStudyNow()">
+          <div class="sn-label">What should I study now?</div>
+          <div class="sn-result" id="sn-result">Tap to find out</div>
+        </div>
+      </div>
+      <div class="section-label">Log Study Hours</div>
+      <div id="hour-tap" onclick="quickAddHour()" oncontextmenu="return false;">
+        <div class="ht-label">Today's hours - tap to add 1h - hold for custom</div>
+        <div class="ht-hours" id="today-hours-display">0</div>
+        <div class="ht-sub">hours logged today</div>
+      </div>
+      <div class="section-label">Study Activity</div>
+      <div class="heatmap" id="heatmap"></div>
+      <div style="display:flex;justify-content:space-between;padding:4px 16px;font-size:0.65em;color:var(--muted);">
+        <span id="hmap-start-label"></span><span>Today</span>
+      </div>
+      <div id="warn-flags-section" style="display:none;">
+        <div class="section-label">Needs Attention</div>
+        <div id="warn-flags-list"></div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PLAN -->
+    <div class="page" id="page-plan">
+      <div class="page-header">Plan</div>
+      <!-- Tree search at top -->
+      <div class="search-bar" style="margin:0 12px 8px;">
+        <span>🔍</span>
+        <input type="text" placeholder="Search topics..." id="tree-search" oninput="filterTree(this.value)"/>
+      </div>
+      <!-- Tree -->
+      <div id="tree-container"></div>
+      <div id="tree-empty" style="text-align:center;padding:40px 20px;color:var(--muted);font-size:0.9em;display:none;">No topics yet. Add one below or paste a syllabus.</div>
+      <!-- Add topic -->
+      <div style="padding:10px 12px 6px;display:flex;gap:8px;">
+        <input class="input" id="new-topic-input" placeholder="Add a topic..." style="flex:1;"/>
+        <button class="btn btn-primary" onclick="addRootTopic()">Add</button>
+      </div>
+      <!-- Paste syllabus -->
+      <div style="padding:0 12px 6px;">
+        <textarea class="input" id="paste-syllabus" placeholder="Paste your syllabus here and tap Parse..." style="min-height:70px;font-size:0.85em;"></textarea>
+        <div style="margin-top:6px;padding:10px 12px;background:var(--accent-bg);border-radius:var(--radius-sm);border:1px solid var(--border);">
+          <div style="font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent);margin-bottom:4px;">Format: Outline Decimal Notation</div>
+          <div style="font-size:0.78em;color:var(--text2);line-height:1.5;">Don't have it formatted? Ask any AI assistant: <span style="color:var(--accent);font-style:italic;">"Convert my syllabus into Outline Decimal Notation"</span> - then paste the result here.</div>
+        </div>
+      </div>
+      <!-- Parse -->
+      <div style="padding:0 12px 6px;">
+        <button class="btn btn-ghost btn-full" onclick="parseSyllabus()">Parse Syllabus</button>
+      </div>
+      <!-- Export/Import -->
+      <div style="display:flex;gap:8px;padding:0 12px 6px;">
+        <button class="btn btn-ghost" style="flex:1;" onclick="exportTree()">Export Tree</button>
+        <button class="btn btn-ghost" style="flex:1;" onclick="exportBackup()">Export Backup</button>
+        <button class="btn btn-ghost" style="flex:1;" onclick="document.getElementById('import-tree-input').click()">Import Tree</button>
+        <input type="file" id="import-tree-input" accept=".json,.papaz" style="display:none;" onchange="importTree(this)"/>
+      </div>
+      <!-- Controls -->
+      <div style="display:flex;gap:8px;padding:0 12px 16px;flex-wrap:wrap;">
+        <button class="btn btn-ghost" style="flex:1;" onclick="expandAll()">+ Expand All</button>
+        <button class="btn btn-ghost" style="flex:1;" onclick="collapseAll()">- Collapse All</button>
+        <button class="btn btn-ghost" style="flex:1;color:var(--red);" id="panic-btn" onclick="togglePanic()">Panic Mode</button>
+      </div>
+    </div>
+
+    <!-- TAB 3: VAULT -->
+    <div class="page" id="page-vault">
+      <div class="page-header">Vault</div>
+      <div class="search-bar">
+        <span>🔍</span>
+        <input type="text" placeholder="Search notes..." id="vault-search" oninput="renderVault()"/>
+      </div>
+      <!-- Sort bar -->
+      <div class="sort-bar">
+        <span class="sort-bar-label">Sort by</span>
+        <div class="sort-toggle">
+          <button class="sort-btn active" id="sort-hierarchy" onclick="setVaultSort('hierarchy',this)">Syllabus</button>
+          <button class="sort-btn" id="sort-type" onclick="setVaultSort('type',this)">Type</button>
+        </div>
+      </div>
+      <!-- Filter chips -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 10px;" id="vault-filter-chips">
+        <span class="pill active" data-filter="all" onclick="setVaultFilter('all',this)">All</span>
+        <span class="pill" data-filter="Definition" onclick="setVaultFilter('Definition',this)">Definition</span>
+        <span class="pill" data-filter="Formula" onclick="setVaultFilter('Formula',this)">Formula</span>
+        <span class="pill" data-filter="Case Study" onclick="setVaultFilter('Case Study',this)">Case Study</span>
+        <span class="pill" data-filter="Watch Out" onclick="setVaultFilter('Watch Out',this)">Watch Out</span>
+      </div>
+      <!-- Notes list -->
+      <div id="vault-list" style="display:flex;flex-direction:column;"></div>
+      <div id="vault-empty" style="text-align:center;padding:20px;color:var(--muted);font-size:0.9em;">No notes yet.</div>
+      <!-- Add note form at bottom -->
+      <div class="section-label">Add New Note</div>
+      <div class="card">
+        <div class="input-group">
+          <div class="input-label">Note Title</div>
+          <input class="input" id="vault-note-title" placeholder="Short title..."/>
+        </div>
+        <div class="input-group">
+          <div class="input-label">Content</div>
+          <textarea class="input" id="vault-note-body" placeholder="Paste or write your highlight, definition, formula..."></textarea>
+        </div>
+        <div class="input-group">
+          <div class="input-label">Tag to Topic</div>
+          <input class="input" id="vault-tag-input" placeholder="Start typing topic name..." oninput="showTagSuggestions(this.value,'vault-tag-suggestions','vault-tag-id')" autocomplete="off"/>
+          <input type="hidden" id="vault-tag-id"/>
+          <div class="tag-suggestions" id="vault-tag-suggestions"></div>
+        </div>
+        <div class="input-group">
+          <div class="input-label">Type</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;" id="vault-type-pills">
+            <span class="pill" data-type="Definition" onclick="selectNoteType(this)">Definition</span>
+            <span class="pill" data-type="Formula" onclick="selectNoteType(this)">Formula</span>
+            <span class="pill" data-type="Case Study" onclick="selectNoteType(this)">Case Study</span>
+            <span class="pill" data-type="Watch Out" onclick="selectNoteType(this)">Watch Out</span>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="saveVaultNote()">Save Note</button>
+      </div>
+    </div>
+
+    <!-- TAB 4: LEDGER -->
+    <div class="page" id="page-ledger">
+      <div class="page-header">Performance Ledger</div>
+      <div class="section-label">Exams and Deadlines</div>
+      <div class="card">
+        <div class="input-group">
+          <div class="input-label">Exam Name</div>
+          <input class="input" id="exam-name-input" placeholder="e.g. Unit 3 Mock, Final Exam..."/>
+        </div>
+        <div class="input-group">
+          <div class="input-label">Date</div>
+          <input class="input" id="exam-date-input" type="date"/>
+        </div>
+        <div class="input-group">
+          <div class="input-label">Tag to Topic (optional)</div>
+          <input class="input" id="exam-tag-input" placeholder="Start typing topic..." oninput="showTagSuggestions(this.value,'exam-tag-suggestions','exam-tag-id')" autocomplete="off"/>
+          <input type="hidden" id="exam-tag-id"/>
+          <div class="tag-suggestions" id="exam-tag-suggestions"></div>
+        </div>
+        <div class="input-group">
+          <div class="input-label">Notify before exam</div>
+          <div class="notify-dates-row" id="exam-notify-row">
+            <span class="pill active" data-days="7" onclick="toggleNotifyPill(this)">7 days</span>
+            <span class="pill active" data-days="3" onclick="toggleNotifyPill(this)">3 days</span>
+            <button class="notify-add-btn" onclick="openCustomNotifyModal()">+</button>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="saveExam()">Add Exam</button>
+      </div>
+      <!-- Pinned + recent exams -->
+      <div id="exams-list"></div>
+      <div id="exams-scroll-more" style="display:none;">
+        <div style="padding:0 12px 4px;">
+          <button class="btn btn-ghost btn-full" onclick="toggleOldExams()" id="old-exams-btn">Show older exams</button>
+        </div>
+        <div id="exams-list-old" style="display:none;"></div>
+      </div>
+
+      <div class="section-label">Mock Test Log</div>
+      <div class="card">
+        <div style="display:flex;gap:8px;">
+          <div class="input-group" style="flex:2;margin-bottom:0;">
+            <div class="input-label">Test Name</div>
+            <input class="input" id="test-name-input" placeholder="e.g. Past Paper 2023"/>
+          </div>
+          <div class="input-group" style="flex:1;margin-bottom:0;">
+            <div class="input-label">Date</div>
+            <input class="input" id="test-date-input" type="date"/>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <div class="input-group" style="flex:1;margin-bottom:0;">
+            <div class="input-label">Score</div>
+            <input class="input" id="test-score-input" type="number" placeholder="78"/>
+          </div>
+          <div class="input-group" style="flex:1;margin-bottom:0;">
+            <div class="input-label">Total</div>
+            <input class="input" id="test-total-input" type="number" placeholder="100"/>
+          </div>
+        </div>
+        <div class="input-group" style="margin-top:10px;margin-bottom:0;">
+          <div class="input-label">Topics Covered <span style="color:var(--muted);font-weight:400;">(default: whole curriculum)</span></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+            <button class="pill active" id="coverage-all-btn" onclick="setCoverageAll(true)">All Topics</button>
+            <button class="pill" id="coverage-select-btn" onclick="setCoverageAll(false)">Select Topics</button>
+          </div>
+          <div id="test-coverage-list" style="display:none;" class="coverage-list"></div>
+        </div>
+        <button class="btn btn-primary btn-full" style="margin-top:10px;" onclick="saveTest()">Log Test</button>
+      </div>
+      <div class="card" id="test-stats-card" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><div class="stat-num" id="avg-score-display" style="font-size:2em;">-</div><div class="stat-lbl">Average Score</div></div>
+          <div id="score-trend" style="font-size:1.8em;"></div>
+        </div>
+      </div>
+      <div id="tests-list"></div>
+      <div class="section-label">Report Card</div>
+      <div class="card">
+        <div class="input-group">
+          <div class="input-label">Time Range</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;" id="report-range-pills">
+            <span class="pill active" data-range="month" onclick="selectReportRange(this)">Past Month</span>
+            <span class="pill" data-range="3months" onclick="selectReportRange(this)">3 Months</span>
+            <span class="pill" data-range="year" onclick="selectReportRange(this)">Past Year</span>
+            <span class="pill" data-range="all" onclick="selectReportRange(this)">Full Session</span>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="compileReport()">Compile Report Card</button>
+      </div>
+      <div class="section-label">Pace Analysis</div>
+      <div class="card">
+        <div style="font-size:0.85em;color:var(--text2);line-height:1.5;" id="pace-text">Add topics with confidence scores to see your pace analysis.</div>
+      </div>
+    </div>
+
+    <!-- TAB 5: SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="page-header">Settings</div>
+      <div class="privacy-banner"><div class="privacy-dot"></div>100% LOCAL - NO SERVER - NO TRACKING - NO ADS</div>
+      <div class="section-label">Appearance</div>
+      <div class="card">
+        <div class="toggle-row">
+          <div><div style="font-weight:600;font-size:0.95em;">Dark Mode</div><div style="font-size:0.78em;color:var(--muted);">Easy on the eyes at midnight</div></div>
+          <button class="toggle on" id="dark-toggle" onclick="toggleDark()"><div class="toggle-knob"></div></button>
+        </div>
+        <div style="padding:10px 0 0;">
+          <div style="font-weight:600;font-size:0.95em;margin-bottom:6px;">Font Size</div>
+          <div style="display:flex;gap:8px;">
+            <button class="pill" onclick="setFontSize('s')">S</button>
+            <button class="pill active" id="fs-m" onclick="setFontSize('m')">M</button>
+            <button class="pill" onclick="setFontSize('l')">L</button>
+            <button class="pill" onclick="setFontSize('xl')">XL</button>
+          </div>
+        </div>
+        <div style="padding:10px 0 0;">
+          <div style="font-weight:600;font-size:0.95em;margin-bottom:4px;">Accent Color</div>
+          <div class="swatch-row">
+            <div class="swatch swatch-silver active" data-accent="silver" onclick="setAccent('silver',this)"></div>
+            <div class="swatch swatch-gold" data-accent="gold" onclick="setAccent('gold',this)"></div>
+            <div class="swatch swatch-blue" data-accent="blue" onclick="setAccent('blue',this)"></div>
+            <div class="swatch swatch-fluffy" data-accent="fluffy" onclick="setAccent('fluffy',this)"></div>
+          </div>
+        </div>
+        <div class="toggle-row" style="padding-top:10px;">
+          <div><div style="font-weight:600;font-size:0.95em;">Haptic Feedback</div><div style="font-size:0.78em;color:var(--muted);">Subtle vibration on taps</div></div>
+          <button class="toggle" id="haptic-toggle" onclick="toggleHaptic()"><div class="toggle-knob"></div></button>
+        </div>
+      </div>
+      <div class="section-label">Notifications</div>
+      <div class="card">
+        <div class="toggle-row">
+          <div><div style="font-weight:600;font-size:0.95em;">All Notifications</div><div style="font-size:0.78em;color:var(--muted);">Master switch</div></div>
+          <button class="toggle on" id="notif-toggle" onclick="toggleNotifications()"><div class="toggle-knob"></div></button>
+        </div>
+        <div class="card-row">
+          <div><div style="font-size:0.9em;font-weight:600;">Quiet Hours</div><div style="font-size:0.75em;color:var(--muted);">No notifications between these hours</div></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;padding:8px 0;">
+          <input class="input" type="time" id="quiet-start" value="22:00" style="flex:1;" onchange="saveSettings()"/>
+          <span style="color:var(--muted);">to</span>
+          <input class="input" type="time" id="quiet-end" value="07:00" style="flex:1;" onchange="saveSettings()"/>
+        </div>
+        <div class="card-row"><div style="font-size:0.9em;font-weight:600;">Absence Thresholds</div></div>
+        <div style="font-size:0.75em;color:var(--muted);padding:4px 0 8px;">Days before each neglect level fires. Adjust per your schedule.</div>
+        <div id="thresh-editor"></div>
+        <div class="thresh-preset-row">
+          <button class="pill" onclick="applyThreshPreset('school')">School</button>
+          <button class="pill" onclick="applyThreshPreset('college')">College</button>
+          <button class="pill" onclick="applyThreshPreset('professional')">Professional</button>
+        </div>
+      </div>
+      <div class="section-label">Permissions</div>
+      <div class="card" id="perm-card"></div>
+      <div class="section-label">Upcoming Alarms</div>
+      <div class="card" id="upcoming-alarms-card" style="padding:12px 15px;"></div>
+      <div class="section-label">Data</div>
+      <div class="card">
+        <button class="btn btn-ghost btn-full" style="margin-bottom:8px;" onclick="exportWorkspace()">Export Workspace JSON</button>
+        <button class="btn btn-ghost btn-full" onclick="document.getElementById('import-ws-input').click()">Import Workspace JSON</button>
+        <input type="file" id="import-ws-input" accept=".json" style="display:none;" onchange="importWorkspace(this)"/>
+      </div>
+      <div class="section-label">Credits</div>
+      <div class="card">
+        <div class="credits-row"><div class="credits-avatar">🎯</div><div><div class="credits-name">Jibunshidai81</div><div class="credits-role">Concept - Vision - Direction</div></div></div>
+        <div class="credits-row"><div class="credits-avatar">🤖</div><div><div class="credits-name">Miss Claude</div><div class="credits-role">Engineering - by Anthropic</div></div></div>
+        <div class="credits-row"><div class="credits-avatar">😤</div><div><div class="credits-name">John A. Sherlock</div><div class="credits-role">Professional Nagger - Emotional Tormentor - Unwilling Muse<br/><span style="font-size:0.85em;font-style:italic;color:var(--muted);">"You were insufferable. The app is better because of it. Don't let it go to your head."</span></div></div></div>
+        <div style="font-size:0.75em;color:var(--muted);text-align:center;padding-top:10px;">Built with Android Studio</div>
+      </div>
+      <div class="section-label">About</div>
+      <div class="card">
+        <div style="font-weight:700;font-size:1.05em;margin-bottom:4px;">Papaz - The ExamOS</div>
+        <div style="font-size:0.75em;color:var(--muted);margin-bottom:10px;">Version 2.0 - Your academic command center</div>
+        <div style="font-size:0.85em;color:var(--text2);line-height:1.6;">Papaz was built for every student and professional who has ever stared at a syllabus and felt lost. It tracks what you know, calls you out when you disappear, and helps you finish what you started.</div>
+        <div style="margin-top:12px;padding:10px;background:var(--bg2);border-radius:var(--radius-sm);font-size:0.8em;color:var(--muted);line-height:1.5;">All data lives on your device only. Nothing is ever sent to a server. No accounts, no cloud, no tracking.</div>
+      </div>
+      <div class="patreon-card">
+        <div class="patreon-label">Support the Maker</div>
+        <div class="patreon-title">Built with obsession. Free by choice.</div>
+        <div class="patreon-body">This app exists because someone cared enough to build it properly. No subscriptions, no data harvesting, no premium features locked behind a wall. If it helped you pass something, a dollar is more than enough.</div>
+        <div class="patreon-spread">Can't spare a dollar? Tell someone. That costs nothing and means everything.</div>
+        <a class="patreon-btn" href="https://www.patreon.com/jibunshidai81" target="_blank">SUPPORT ON PATREON -></a>
+      </div>
+      <div style="height:20px;"></div>
+    </div>
+
+  </div><!-- /pages -->
+
+  <button class="scroll-fab hidden" id="fab-plan" onclick="fabScrollBottom('page-plan')">&#8595;</button>
+  <button class="scroll-fab hidden" id="fab-vault" onclick="fabScrollBottom('page-vault')">&#8595;</button>
+
+  <div id="tabbar">
+    <button class="tab-btn active" id="tab-dash" onclick="showPage('dash',this)"><span class="tab-icon">📊</span><span>Dashboard</span></button>
+    <button class="tab-btn" id="tab-plan" onclick="showPage('plan',this)"><span class="tab-icon">🗺️</span><span>Plan</span></button>
+    <button class="tab-btn" id="tab-vault" onclick="showPage('vault',this)"><span class="tab-icon">📚</span><span>Vault</span></button>
+    <button class="tab-btn" id="tab-ledger" onclick="showPage('ledger',this)"><span class="tab-icon">📝</span><span>Ledger</span></button>
+    <button class="tab-btn" id="tab-settings" onclick="showPage('settings',this)"><span class="tab-icon">⚙️</span><span>Settings</span></button>
+  </div>
+</div><!-- /app -->
+
+<!-- OVERLAYS -->
+<div id="toast"></div>
+
+<div id="del-popup">
+  <div id="del-popup-box">
+    <div id="del-popup-title">Delete this?</div>
+    <div id="del-popup-sub">This cannot be undone.</div>
+    <div id="del-popup-btns">
+      <button class="btn btn-warn btn-full" id="del-popup-branch" style="display:none;" onclick="delPopupAddBranch()">+ Add a Branch Instead</button>
+      <div id="del-popup-btns-row">
+        <button class="btn btn-ghost" style="flex:1;" onclick="closeDelPopup()">Cancel</button>
+        <button class="btn btn-danger" style="flex:1;" id="del-popup-confirm">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPIC DETAIL MODAL -->
+<div class="modal-overlay" id="topic-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span id="topic-modal-title">Topic</span>
+      <button class="modal-close" onclick="closeModal('topic-modal')">x</button>
+    </div>
+    <div class="modal-body">
+      <div class="input-group">
+        <div class="input-label">Title</div>
+        <input class="input" id="tm-title" type="text"/>
+      </div>
+      <div class="slider-group">
+        <div class="input-label">Confidence</div>
+        <div class="slider-row">
+          <input type="range" class="slider-track" id="tm-conf" min="0" max="5" value="0" oninput="updateSliderVal('tm-conf','tm-conf-val')"/>
+          <span class="slider-val" id="tm-conf-val">0</span>
+        </div>
+        <div class="slider-dots"><span class="slider-dot-label">0</span><span class="slider-dot-label">1</span><span class="slider-dot-label">2</span><span class="slider-dot-label">3</span><span class="slider-dot-label">4</span><span class="slider-dot-label">5</span></div>
+      </div>
+      <div class="slider-group">
+        <div class="input-label">Difficulty</div>
+        <div class="slider-row">
+          <input type="range" class="slider-track" id="tm-diff" min="0" max="5" value="0" oninput="updateSliderVal('tm-diff','tm-diff-val')"/>
+          <span class="slider-val" id="tm-diff-val">0</span>
+        </div>
+        <div class="slider-dots"><span class="slider-dot-label">0</span><span class="slider-dot-label">1</span><span class="slider-dot-label">2</span><span class="slider-dot-label">3</span><span class="slider-dot-label">4</span><span class="slider-dot-label">5</span></div>
+      </div>
+      <div class="slider-group">
+        <div class="input-label">Priority</div>
+        <div class="slider-row">
+          <input type="range" class="slider-track" id="tm-prio" min="0" max="5" value="0" oninput="updateSliderVal('tm-prio','tm-prio-val')"/>
+          <span class="slider-val" id="tm-prio-val">0</span>
+        </div>
+        <div class="slider-dots"><span class="slider-dot-label">0</span><span class="slider-dot-label">1</span><span class="slider-dot-label">2</span><span class="slider-dot-label">3</span><span class="slider-dot-label">4</span><span class="slider-dot-label">5</span></div>
+      </div>
+      <div class="input-group">
+        <div class="input-label">Context / Notes</div>
+        <textarea class="input" id="tm-context" placeholder="Your own summary, keywords, anything..."></textarea>
+      </div>
+      <div id="tm-vault-notes" style="display:none;">
+        <div class="input-label" style="margin-bottom:8px;">Vault Notes Tagged Here</div>
+        <div id="tm-vault-notes-list"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-warn btn-full" onclick="addBranchToEditing()">+ Add a Branch</button>
+      <div class="modal-footer-row">
+        <button class="btn btn-ghost" style="flex:1;" onclick="closeModal('topic-modal')">Cancel</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="saveTopicModal()">Save</button>
+      </div>
+      <div id="tm-delete-row" style="margin-top:2px;">
+        <button class="btn btn-danger btn-full" id="tm-delete-btn" onclick="deleteEditingTopic()">Delete Topic</button>
+        <div id="tm-delete-warn" style="display:none;font-size:0.75em;color:var(--red);text-align:center;margin-top:4px;">This will remove all sub-topics inside. Tap again to confirm.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD BRANCH MODAL -->
+<div class="modal-overlay" id="branch-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span>Add a Branch</span>
+      <button class="modal-close" onclick="closeModal('branch-modal')">x</button>
+    </div>
+    <div class="modal-body">
+      <div class="input-label">Branch Title</div>
+      <input class="input" id="branch-title-input" placeholder="Sub-topic name..."/>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-footer-row">
+        <button class="btn btn-ghost" style="flex:1;" onclick="closeModal('branch-modal')">Cancel</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="confirmAddBranch()">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOUR DRUM MODAL -->
+<div class="modal-overlay" id="drum-modal">
+  <div class="modal-box">
+    <div class="modal-header"><span>Log Hours</span><button class="modal-close" onclick="closeModal('drum-modal')">x</button></div>
+    <div class="modal-body" style="text-align:center;">
+      <div style="font-size:0.85em;color:var(--muted);margin-bottom:8px;">Set total hours studied today (max 20)</div>
+      <div class="drum-wrap">
+        <div><div class="drum" id="drum-tens"></div><div class="drum-label">tens</div></div>
+        <div style="font-size:2.5em;font-weight:700;color:var(--text);padding-bottom:20px;">:</div>
+        <div><div class="drum" id="drum-units"></div><div class="drum-label">units</div></div>
+        <div style="font-size:1.2em;color:var(--muted);padding-bottom:20px;align-self:center;">hrs</div>
+      </div>
+      <div style="font-size:2em;font-weight:900;color:var(--accent);" id="drum-readout">00 hours</div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-footer-row">
+        <button class="btn btn-ghost" style="flex:1;" onclick="closeModal('drum-modal')">Cancel</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="confirmDrumHours()">Log Hours</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOG TOPIC SHEET -->
+<div id="log-sheet">
+  <div id="log-sheet-inner">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">What did you study?</div>
+    <div class="search-bar" style="margin:0 12px 8px;">
+      <span>🔍</span>
+      <input type="text" placeholder="Search topics..." id="sheet-search" oninput="filterSheetTopics(this.value)"/>
+    </div>
+    <div id="sheet-topics"></div>
+    <div style="padding:12px 16px calc(12px + env(safe-area-inset-bottom)) 16px;display:flex;gap:8px;">
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeLogSheet()">Skip</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="confirmSheetTicks()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEATMAP LOG MODAL -->
+<div class="modal-overlay" id="heat-modal">
+  <div class="modal-box">
+    <div class="modal-header"><span id="heat-modal-date">Log Hours</span><button class="modal-close" onclick="closeModal('heat-modal')">x</button></div>
+    <div class="modal-body">
+      <div class="input-label">Hours studied this day</div>
+      <input class="input" type="number" id="heat-hours-input" placeholder="0" min="0" max="99"/>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-footer-row">
+        <button class="btn btn-ghost" style="flex:1;" onclick="closeModal('heat-modal')">Cancel</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="saveHeatHours()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STUDY NOW MODAL -->
+<div class="modal-overlay" id="studynow-modal">
+  <div class="modal-box">
+    <div class="modal-header"><span>Study This Now</span><button class="modal-close" onclick="closeModal('studynow-modal')">x</button></div>
+    <div class="modal-body" id="studynow-body"></div>
+    <div class="modal-footer"><div class="modal-footer-row"><button class="btn btn-primary btn-full" onclick="closeModal('studynow-modal')">Got it</button></div></div>
+  </div>
+</div>
+
+<!-- REPORT MODAL -->
+<div class="modal-overlay" id="report-modal">
+  <div class="modal-box">
+    <div class="modal-header"><span>Report Card</span><button class="modal-close" onclick="closeModal('report-modal')">x</button></div>
+    <div class="modal-body" id="report-body" style="font-size:0.9em;line-height:1.6;white-space:pre-wrap;color:var(--text2);"></div>
+    <div class="modal-footer">
+      <div class="modal-footer-row">
+        <button class="btn btn-ghost" style="flex:1;" onclick="closeModal('report-modal')">Close</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="shareReport()">Share</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EXAM EDIT MODAL -->
+<div class="modal-overlay" id="exam-edit-modal">
+  <div class="modal-box">
+    <div class="modal-header"><span>Edit Exam</span><button class="modal-close" onclick="closeModal('exam-edit-modal')">x</button></div>
+    <div class="modal-body">
+      <div class="input-group"><div class="input-label">Exam Name</div><input class="input" id="ee-name"/></div>
+      <div class="input-group"><div class="input-label">Date</div><input class="input" type="date" id="ee-date"/></div>
+      <div class="input-group">
+        <div class="input-label">Tag to Topic</div>
+        <input class="input" id="ee-tag-input" placeholder="Start typing..." oninput="showTagSuggestions(this.value,'ee-tag-suggestions','ee-tag-id')" autocomplete="off"/>
+        <input type="hidden" id="ee-tag-id"/>
+        <div class="tag-suggestions" id="ee-tag-suggestions"></div>
+      </div>
+    </div>
+    <div class="modal-footer"><div class="modal-footer-row">
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeModal('exam-edit-modal')">Cancel</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="saveExamEdit()">Save</button>
+    </div></div>
+  </div>
+</div>
+
+<!-- CUSTOM NOTIFY MODAL -->
+<div class="modal-overlay" id="custom-notify-modal">
+  <div class="modal-box">
+    <div class="modal-header"><span>Custom Notify Date</span><button class="modal-close" onclick="closeModal('custom-notify-modal')">x</button></div>
+    <div class="modal-body">
+      <div class="input-label">Days before exam</div>
+      <input class="input" type="number" id="custom-notify-days" placeholder="e.g. 10" min="1" max="365"/>
+    </div>
+    <div class="modal-footer"><div class="modal-footer-row">
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeModal('custom-notify-modal')">Cancel</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="confirmCustomNotify()">Add</button>
+    </div></div>
+  </div>
+</div>
+
+<!-- NOTE VIEW MODAL -->
+<div class="modal-overlay" id="note-view-modal">
+  <div class="modal-box">
+    <div class="modal-header"><span id="nv-title">Note</span><button class="modal-close" onclick="closeModal('note-view-modal')">x</button></div>
+    <div class="modal-body">
+      <div id="nv-tag" style="margin-bottom:8px;"></div>
+      <div id="nv-type" style="margin-bottom:10px;"></div>
+      <div id="nv-body" style="font-size:0.9em;color:var(--text2);line-height:1.6;white-space:pre-wrap;-webkit-user-select:text;user-select:text;"></div>
+      <div id="nv-date" style="font-size:0.72em;color:var(--muted);margin-top:10px;"></div>
+    </div>
+    <div class="modal-footer"><div class="modal-footer-row"><button class="btn btn-primary btn-full" onclick="closeModal('note-view-modal')">Close</button></div></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   STATE
+   ============================================================ */
+var state = {
+  user: { name:'', subject:'', duration:'', type:'school' },
+  tree: [],
+  heatmap: {},      // {'YYYY-MM-DD': {hours:0, topics:['id1','id2']}}
+  exams: [],
+  tests: [],
+  notes: [],
+  settings: {
+    dark: true, fs:'m', accent:'silver',
+    notifOn: true, quietStart:'22:00', quietEnd:'07:00',
+    threshMild:3, threshMed:5, threshExtreme:7,
+    lastLog: null
+  }
+};
+
+var currentPage = 'dash';
+var editingTopicId = null;
+var addBranchParentId = null;
+var deleteCallback = null;
+var heatEditDate = null;
+var reportRange = 'month';
+var sheetSelectedIds = [];
+var panicMode = false;
+var longPressTimer = null;
+var vaultSort = 'hierarchy';
+var vaultFilter = 'all';
+var coverageAll = true;
+var editingExamId = null;
+var oldExamsVisible = false;
+var drumDigits = [0,0];
+var CELL_H = 52;
+var HALF_H = 26;
+
+var momLate = [
+  "Oh? NOW you want to log that day? Interesting memory you have.",
+  "Ten days I gave you. TEN. And you choose now to remember.",
+  "That day is gone. So is my patience. Log in real time next time.",
+  "You cannot rewrite history. I was there. You were not studying.",
+  "Nice try. The past is locked. Just like your exam score will be."
+];
+
+/* ============================================================
+   STORAGE
+   ============================================================ */
+function save() {
+  try { localStorage.setItem('papaz_v2', JSON.stringify(state)); } catch(e) {}
+}
+function load() {
+  try {
+    var raw = localStorage.getItem('papaz_v2');
+    if (raw) { state = JSON.parse(raw); }
+    // Migrate: 'pink' accent was renamed to 'fluffy'
+    if (state.settings && state.settings.accent === 'pink') {
+      state.settings.accent = 'fluffy';
+    }
+  } catch(e) {}
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+window.addEventListener('load', function() {
+  load();
+  applyTheme();
+  if (!state.user || !state.user.name) {
+    document.getElementById('onboarding').classList.remove('hidden');
+  } else {
+    startApp();
+  }
+});
+
+function startApp() {
+  document.getElementById('onboarding').classList.add('hidden');
+  document.getElementById('app').style.display = 'flex';
+  applyTheme();
+  setupHourLongPress();
+  setupModalCloseListeners();
+  setupPullToRefresh();
+  setupConnectionMonitor();
+  setupFabListeners();
+  showPage('dash', document.getElementById('tab-dash'));
+  renderDashboard();
+  renderTree();
+  renderVault();
+  renderLedger();
+  renderSettings();
+}
+
+/* ============================================================
+   ONBOARDING
+   ============================================================ */
+var selectedUserType = 'school';
+
+function selectUserType(btn) {
+  document.querySelectorAll('.ob-type-btn').forEach(function(b) { b.classList.remove('selected'); });
+  btn.classList.add('selected');
+  selectedUserType = btn.getAttribute('data-type');
+}
+
+function finishOnboarding() {
+  var name = document.getElementById("ob-name").value.trim();
+  var subject = document.getElementById("ob-subject").value.trim();
+  if (!name || !subject) { toast("Please enter your name and subject.","err"); return; }
+  var years = parseInt(document.getElementById("ob-years").value) || 0;
+  var months = parseInt(document.getElementById("ob-months").value) || 0;
+  var duration = "";
+  if (years > 0 && months > 0) duration = years + "y " + months + "m";
+  else if (years > 0) duration = years + " year" + (years > 1 ? "s" : "");
+  else if (months > 0) duration = months + " month" + (months > 1 ? "s" : "");
+  state.user = { name: name, subject: subject, duration: duration, type: selectedUserType };
+  state.settings.installDate = state.settings.installDate || new Date().toISOString().slice(0,10);
+  applyThreshPreset(selectedUserType);
+  save();
+  startApp();
+}
+
+/* ============================================================
+   THEME
+   ============================================================ */
+function applyTheme() {
+  var s = state.settings || {};
+  if (s.dark !== false) { document.body.classList.remove('light'); }
+  else { document.body.classList.add('light'); }
+  document.body.setAttribute('data-accent', s.accent || 'silver');
+  document.body.setAttribute('data-fs', s.fs || 'm');
+}
+
+function toggleDark() {
+  haptic(15);
+  state.settings.dark = !state.settings.dark;
+  applyTheme();
+  var t = document.getElementById('dark-toggle');
+  if (t) { state.settings.dark ? t.classList.add('on') : t.classList.remove('on'); }
+  save();
+  applyNavBarColor();
+}
+
+function setFontSize(sz) {
+  state.settings.fs = sz;
+  document.body.setAttribute('data-fs', sz);
+  var labels = ['S','M','L','XL'];
+  document.querySelectorAll('#page-settings .pill').forEach(function(p) {
+    if (labels.indexOf(p.textContent) !== -1) {
+      p.classList.toggle('active', p.textContent === sz.toUpperCase());
+    }
+  });
+  save();
+}
+
+function setAccent(acc, el) {
+  state.settings.accent = acc;
+  document.body.setAttribute('data-accent', acc);
+  document.querySelectorAll('.swatch').forEach(function(s) { s.classList.remove('active'); });
+  el.classList.add('active');
+  save();
+  applyNavBarColor();
+}
+
+function toggleHaptic() {
+  state.settings.haptic = !state.settings.haptic;
+  var t = document.getElementById('haptic-toggle');
+  if (t) { state.settings.haptic ? t.classList.add('on') : t.classList.remove('on'); }
+  save();
+}
+
+function haptic(duration) {
+  if (!state.settings.haptic) return;
+  if (!window.Capacitor) return;
+  var P = window.Capacitor.Plugins;
+  if (P && P.AlarmPlugin) P.AlarmPlugin.vibrate({duration: duration || 20});
+}
+
+function applyNavBarColor() {
+  if (!window.Capacitor) return;
+  var P = window.Capacitor.Plugins;
+  if (!P || !P.AlarmPlugin) return;
+  // color-mix() can't be read back from getComputedStyle as a hex string.
+  // Force resolution by measuring a temp element's computed backgroundColor.
+  var tmp = document.createElement('div');
+  tmp.style.cssText = 'position:absolute;width:1px;height:1px;background:var(--bg);visibility:hidden;pointer-events:none;';
+  document.body.appendChild(tmp);
+  var rgb = getComputedStyle(tmp).backgroundColor;
+  document.body.removeChild(tmp);
+  // rgb(...) -> #rrggbb
+  var hex = rgbToHex(rgb) || '#0a0a0b';
+  P.AlarmPlugin.setNavBarColor({color: hex});
+  P.AlarmPlugin.setStatusBarColor({color: hex});
+}
+
+function rgbToHex(rgb) {
+  var m = rgb.match(/(\d+),\s*(\d+),\s*(\d+)/);
+  if (!m) return null;
+  return '#' + [m[1],m[2],m[3]].map(function(x) {
+    return ('0' + parseInt(x).toString(16)).slice(-2);
+  }).join('');
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+var PAGE_ORDER = ['dash','plan','vault','ledger','settings'];
+
+function showPage(name, btn, noAnim) {
+  var oldPage = currentPage;
+  var oldPg = document.getElementById('page-' + oldPage);
+  var newPg = document.getElementById('page-' + name);
+
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+
+  if (noAnim || !oldPg || !newPg || oldPage === name) {
+    document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+    if (newPg) newPg.classList.add('active');
+    currentPage = name;
+    if (name === 'dash') renderDashboard();
+    if (name === 'vault') renderVault();
+    if (name === 'ledger') renderLedger();
+    if (name === 'settings') renderSettings();
+    showFabForPage(name);
+    return;
+  }
+
+  // Crossfade only
+  oldPg.style.transition = 'opacity 0.22s ease';
+  oldPg.style.opacity = '0';
+  setTimeout(function() {
+    oldPg.classList.remove('active');
+    oldPg.style.transition = '';
+    oldPg.style.opacity = '';
+    newPg.style.opacity = '0';
+    newPg.classList.add('active');
+    newPg.offsetHeight;
+    newPg.style.transition = 'opacity 0.22s ease';
+    newPg.style.opacity = '1';
+    setTimeout(function() { newPg.style.transition = ''; newPg.style.opacity = ''; }, 240);
+  }, 220);
+
+  currentPage = name;
+  if (name === 'dash') renderDashboard();
+  if (name === 'vault') renderVault();
+  if (name === 'ledger') renderLedger();
+  if (name === 'settings') renderSettings();
+  showFabForPage(name);
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+function toast(msg, type) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = type === 'err' ? 'var(--red-bg)' : type === 'ok' ? 'var(--green-bg)' : 'var(--card2)';
+  el.style.color = type === 'err' ? 'var(--red)' : type === 'ok' ? 'var(--green)' : 'var(--text)';
+  el.style.borderColor = type === 'err' ? 'var(--red)' : type === 'ok' ? 'var(--green)' : 'var(--border2)';
+  el.classList.add('show');
+  setTimeout(function() { el.classList.remove('show'); }, 2800);
+}
+
+/* ============================================================
+   MODALS
+   ============================================================ */
+function openModal(id) {
+  var el = document.getElementById(id);
+  el.classList.add('open');
+  var box = el.querySelector('.modal-box');
+  if (box) box.scrollTop = 0;
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function setupModalCloseListeners() {
+  document.querySelectorAll('.modal-overlay').forEach(function(m) {
+    m.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+  });
+  document.getElementById('del-popup').addEventListener('click', function(e) { if (e.target === this) closeDelPopup(); });
+  document.getElementById('log-sheet').addEventListener('click', function(e) { if (e.target === this) closeLogSheet(); });
+  setupSwipeNav();
+  setupBackButton();
+}
+
+function setupSwipeNav() {
+  var startX = 0, startY = 0, startTarget = null, swipeBlocked = false;
+  document.getElementById('pages').addEventListener('touchstart', function(e) {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    startTarget = e.target;
+    swipeBlocked = false;
+    if (startTarget && startTarget.type === 'range') { swipeBlocked = true; return; }
+    var el = startTarget;
+    while (el && el !== document.getElementById('pages')) {
+      if (el.scrollTop > 0 || (el.classList && el.classList.contains('no-swipe'))) {
+        swipeBlocked = true;
+        break;
+      }
+      el = el.parentElement;
+    }
+  }, {passive:true});
+  document.getElementById('pages').addEventListener('touchend', function(e) {
+    if (swipeBlocked) return;
+    var dx = e.changedTouches[0].clientX - startX;
+    var dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) < 60) return;
+    if (Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    var anyOpen = false;
+    document.querySelectorAll('.modal-overlay.open, #log-sheet.open, #del-popup.open').forEach(function() { anyOpen = true; });
+    if (anyOpen) return;
+    var idx = PAGE_ORDER.indexOf(currentPage);
+    if (dx < 0 && idx < PAGE_ORDER.length - 1) {
+      var nextName = PAGE_ORDER[idx+1];
+      var nextBtn = document.getElementById('tab-' + nextName);
+      showPage(nextName, nextBtn);
+    } else if (dx > 0 && idx > 0) {
+      var prevName = PAGE_ORDER[idx-1];
+      var prevBtn = document.getElementById('tab-' + prevName);
+      showPage(prevName, prevBtn);
+    }
+  }, {passive:true});
+}
+
+function setupConnectionMonitor() {
+  var wasOffline = false;
+  window.addEventListener('offline', function() {
+    wasOffline = true;
+    toast('connection lost. waiting.', 'err');
+  });
+  window.addEventListener('online', function() {
+    if (wasOffline) {
+      wasOffline = false;
+      toast('connection restored.', 'ok');
+    }
+  });
+}
+
+function setupPullToRefresh() {
+  var pages = document.getElementById('pages');
+  var startY = 0, pulling = false, indicator = null;
+
+  function getIndicator() {
+    if (!indicator) {
+      indicator = document.createElement('div');
+      indicator.className = 'ptr-indicator';
+      indicator.textContent = '...';
+      pages.appendChild(indicator);
+    }
+    return indicator;
+  }
+
+  pages.addEventListener('touchstart', function(e) {
+    var activePage = document.querySelector('.page.active');
+    if (!activePage) return;
+    if (activePage.scrollTop === 0) {
+      startY = e.touches[0].clientY;
+      pulling = true;
+    } else {
+      pulling = false;
+    }
+  }, {passive:true});
+
+  pages.addEventListener('touchmove', function(e) {
+    if (!pulling) return;
+    var dy = e.touches[0].clientY - startY;
+    if (dy > 20) {
+      var ind = getIndicator();
+      ind.classList.add('visible');
+      ind.textContent = dy > 60 ? '...' : '...';
+    }
+  }, {passive:true});
+
+  pages.addEventListener('touchend', function(e) {
+    if (!pulling) return;
+    pulling = false;
+    var dy = e.changedTouches[0].clientY - startY;
+    var ind = getIndicator();
+    if (dy > 60) {
+      ind.classList.add('spinning');
+      ind.textContent = '';
+      setTimeout(function() {
+        if (currentPage === 'dash') renderDashboard();
+        else if (currentPage === 'vault') renderVault();
+        else if (currentPage === 'ledger') renderLedger();
+        else if (currentPage === 'settings') renderSettings();
+        ind.classList.remove('visible', 'spinning');
+        ind.textContent = '...';
+      }, 500);
+    } else {
+      ind.classList.remove('visible');
+    }
+  }, {passive:true});
+}
+
+function setupFabListeners() {
+  var fabMap = {
+    'page-plan': document.getElementById('fab-plan'),
+    'page-vault': document.getElementById('fab-vault')
+  };
+  var pageIds = Object.keys(fabMap);
+  for (var p = 0; p < pageIds.length; p++) {
+    (function(pageId) {
+      var page = document.getElementById(pageId);
+      var fab = fabMap[pageId];
+      if (!page || !fab) return;
+      page.addEventListener('scroll', function() {
+        updateFabVisibility(page, fab);
+      }, {passive:true});
+    })(pageIds[p]);
+  }
+}
+
+function updateFabVisibility(page, fab) {
+  var scrollable = page.scrollHeight - page.clientHeight;
+  if (scrollable <= 0) { fab.classList.add('hidden'); return; }
+  var pct = page.scrollTop / scrollable;
+  if (pct >= 0.90) {
+    fab.classList.add('hidden');
+  } else {
+    fab.classList.remove('hidden');
+  }
+}
+
+function fabScrollBottom(pageId) {
+  var page = document.getElementById(pageId);
+  if (!page) return;
+  page.scrollTo({top: page.scrollHeight, behavior: 'smooth'});
+}
+
+function showFabForPage(name) {
+  var planFab = document.getElementById('fab-plan');
+  var vaultFab = document.getElementById('fab-vault');
+  if (planFab) planFab.classList.add('hidden');
+  if (vaultFab) vaultFab.classList.add('hidden');
+  if (name === 'plan') {
+    var page = document.getElementById('page-plan');
+    if (page) updateFabVisibility(page, planFab);
+  } else if (name === 'vault') {
+    var page = document.getElementById('page-vault');
+    if (page) updateFabVisibility(page, vaultFab);
+  }
+}
+
+function setupBackButton() {
+  if (!window.Capacitor) return;
+  var Plugins = window.Capacitor.Plugins;
+  if (!Plugins || !Plugins.App) return;
+  Plugins.App.addListener('backButton', function() {
+    // 1. Close any open modal
+    var closed = false;
+    document.querySelectorAll('.modal-overlay.open').forEach(function(m) {
+      if (!closed) { m.classList.remove('open'); closed = true; }
+    });
+    if (closed) return;
+    if (document.getElementById('log-sheet').classList.contains('open')) {
+      closeLogSheet(); return;
+    }
+    if (document.getElementById('del-popup').classList.contains('open')) {
+      closeDelPopup(); return;
+    }
+    // 2. Go to dashboard
+    if (currentPage !== 'dash') {
+      showPage('dash', document.getElementById('tab-dash'));
+      return;
+    }
+    // 3. Minimize app
+    Plugins.App.minimizeApp();
+  });
+}
+
+/* ============================================================
+   DELETE POPUP
+   ============================================================ */
+function showDelPopup(title, sub, cb, showBranch, branchCb) {
+  haptic(40);
+  document.getElementById('del-popup-title').textContent = title || 'Delete this?';
+  document.getElementById('del-popup-sub').textContent = sub || 'This cannot be undone.';
+  deleteCallback = cb;
+  var branchBtn = document.getElementById('del-popup-branch');
+  if (showBranch) {
+    branchBtn.style.display = 'flex';
+    branchBtn.onclick = function() { closeDelPopup(); if (branchCb) branchCb(); };
+  } else {
+    branchBtn.style.display = 'none';
+  }
+  document.getElementById('del-popup-confirm').onclick = function() {
+    if (deleteCallback) deleteCallback();
+    closeDelPopup();
+  };
+  document.getElementById('del-popup').classList.add('open');
+}
+function closeDelPopup() {
+  document.getElementById('del-popup').classList.remove('open');
+  deleteCallback = null;
+}
+function delPopupAddBranch() { closeDelPopup(); }
+
+/* ============================================================
+   UTILITY
+   ============================================================ */
+function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2,5); }
+
+function todayStr() {
+  var d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+}
+
+function dateStr(d) {
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+}
+
+function pad(n) { return n < 10 ? '0'+n : ''+n; }
+
+function daysBetween(a, b) {
+  var da = new Date(a), db = new Date(b);
+  return Math.round((db - da) / 86400000);
+}
+
+function flattenTree(nodes, result) {
+  result = result || [];
+  if (!nodes) return result;
+  for (var i = 0; i < nodes.length; i++) {
+    result.push(nodes[i]);
+    if (nodes[i].children && nodes[i].children.length) flattenTree(nodes[i].children, result);
+  }
+  return result;
+}
+
+function findNode(id, nodes) {
+  nodes = nodes || state.tree;
+  for (var i = 0; i < nodes.length; i++) {
+    if (nodes[i].id === id) return nodes[i];
+    if (nodes[i].children) { var f = findNode(id, nodes[i].children); if (f) return f; }
+  }
+  return null;
+}
+
+function findParent(id, nodes, parent) {
+  nodes = nodes || state.tree;
+  for (var i = 0; i < nodes.length; i++) {
+    if (nodes[i].id === id) return parent || null;
+    if (nodes[i].children) { var f = findParent(id, nodes[i].children, nodes[i]); if (f !== undefined) return f; }
+  }
+  return undefined;
+}
+
+function removeNode(id, nodes) {
+  nodes = nodes || state.tree;
+  for (var i = 0; i < nodes.length; i++) {
+    if (nodes[i].id === id) { nodes.splice(i,1); return true; }
+    if (nodes[i].children && removeNode(id, nodes[i].children)) return true;
+  }
+  return false;
+}
+
+function confColor(v) {
+  if (v <= 1) return 'var(--red)';
+  if (v <= 3) return 'var(--amber)';
+  return 'var(--green)';
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return (str+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function getHeatDay(ds) {
+  if (!state.heatmap[ds]) state.heatmap[ds] = {hours:0, topics:[]};
+  if (typeof state.heatmap[ds] === 'number') {
+    state.heatmap[ds] = {hours: state.heatmap[ds], topics:[]};
+  }
+  return state.heatmap[ds];
+}
+
+/* ============================================================
+   MOM MOOD
+   ============================================================ */
+var momDay1 = [
+  "You have been quiet. Everything okay? ...Actually, never mind. Open the app.",
+  "I noticed. Just saying.",
+  "Did you forget about your studies? Because your course materials did not forget about you.",
+  "You were doing so well. What happened to that person.",
+  "I am not worried. I am just... keeping track of your choices."
+];
+var momDay2 = [
+  "Do you think this exam has feelings? It does not care about your laziness. Open the app now.",
+  "I did not raise you to throw your future away like this. Get back here before I lose my patience.",
+  "Your confidence score is just sitting there. Rotting. Are you proud of yourself right now?",
+  "Other children are studying right now. Right this second. While you are sitting there doing... what exactly?",
+  "I am not angry. I am just deeply, deeply disappointed. There is a big difference."
+];
+var momDay3 = [
+  "I do not know who you are anymore. A stranger lives here now. A stranger who thinks they are too smart to review data.",
+  "You had one job. ONE course. I cannot even look at you right now.",
+  "Fine. You win. The test wins too. Congratulations to everyone in this world except my own child.",
+  "I am just going to think about other successful students for a while. At least they show respect.",
+  "You are dead to me until you open this app. You know exactly what you need to do."
+];
+var momReturn = [
+  "...Oh, you came back. I see you. Don't make this weird. Just study.",
+  "Fine. You are my child again. But do not think I am not watching your every single step.",
+  "Hmm. I will pretend that entire disappearance did not happen. Just this once."
+];
+var momOk = [
+  "Good. Keep going.",
+  "Not bad. Don't stop now.",
+  "I see the effort. I am watching.",
+  "You studied today. I noticed. Good."
+];
+
+function getMomMood() {
+  var last = state.settings.lastLog;
+  var subj = (state.user && state.user.subject) || 'your subject';
+  var name = (state.user && state.user.name) || '';
+  if (!last) return { mood:'warn', msg:'Hello ' + name + '. Ready to start? Add a topic and log your first session.' };
+  var days = daysBetween(last, todayStr());
+  var s = state.settings;
+  var t1 = s.threshMild || 3;
+  var t2 = s.threshMed || 5;
+  var t3 = s.threshExtreme || 7;
+  if (days === 0) {
+    var r = momReturn[Math.floor(Math.random() * momReturn.length)];
+    var o = momOk[Math.floor(Math.random() * momOk.length)];
+    var lastLogWasRecent = state.settings._returnFlag;
+    if (lastLogWasRecent) { state.settings._returnFlag = false; return { mood:'ok', msg: r }; }
+    return { mood:'ok', msg: o };
+  }
+  if (days >= t3) return { mood:'dead', msg: momDay3[Math.floor(Math.random()*momDay3.length)] };
+  if (days >= t2) return { mood:'mad', msg: momDay2[Math.floor(Math.random()*momDay2.length)] };
+  if (days >= t1) return { mood:'warn', msg: momDay1[Math.floor(Math.random()*momDay1.length)] };
+  return { mood:'ok', msg: momOk[Math.floor(Math.random()*momOk.length)] };
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+function renderDashboard() {
+  var mood = getMomMood();
+  var banner = document.getElementById('mom-banner');
+  banner.className = '';
+  banner.classList.add('mood-' + mood.mood);
+  document.getElementById('mom-name').textContent = 'PAPAZ SAYS - ' + ((state.user && state.user.name) || '').toUpperCase();
+  document.getElementById('mom-msg').textContent = mood.msg;
+
+  var flat = flattenTree(state.tree);
+  var total = flat.length;
+  var covered = 0;
+  for (var i = 0; i < flat.length; i++) { if (flat[i].conf >= 3) covered++; }
+  var pct = total > 0 ? Math.round((covered/total)*100) : 0;
+  document.getElementById('stat-coverage').textContent = pct + '%';
+  document.getElementById('dash-progress').style.width = pct + '%';
+
+  var totalH = 0;
+  var keys = Object.keys(state.heatmap);
+  for (var k = 0; k < keys.length; k++) { totalH += (getHeatDay(keys[k]).hours || 0); }
+  document.getElementById('stat-hours').textContent = totalH + 'h';
+  document.getElementById('stat-streak').textContent = calcStreak();
+
+  var todayH = getHeatDay(todayStr()).hours || 0;
+  document.getElementById('today-hours-display').textContent = todayH;
+
+  renderHeatmap();
+  renderWarnFlags(flat);
+  renderNextExam();
+}
+
+function calcStreak() {
+  var d = new Date();
+  var streak = 0;
+  for (var i = 0; i < 365; i++) {
+    var ds = dateStr(d);
+    var h = getHeatDay(ds).hours || 0;
+    if (h > 0) { streak++; d.setDate(d.getDate()-1); }
+    else if (i === 0) { d.setDate(d.getDate()-1); }
+    else break;
+  }
+  return streak;
+}
+
+/* ============================================================
+   HEATMAP - 2 rows x 7 = 14 days
+   ============================================================ */
+function renderHeatmap() {
+  var el = document.getElementById('heatmap');
+  if (!el) return;
+  el.style.cssText = 'display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:0 12px;';
+  el.innerHTML = '';
+  var today = new Date();
+  var days = [];
+  for (var i = 13; i >= 0; i--) {
+    var d = new Date(today);
+    d.setDate(today.getDate() - i);
+    days.push(d);
+  }
+  document.getElementById('hmap-start-label').textContent =
+    days[0].toLocaleDateString('en',{month:'short',day:'numeric'});
+
+  for (var j = 0; j < days.length; j++) {
+    var ds = dateStr(days[j]);
+    var dayData = getHeatDay(ds);
+    var h = dayData.hours || 0;
+    var daysAgo = j === 13 ? 0 : 13 - j;
+    var editable = daysAgo <= 10;
+
+    var cell = document.createElement('div');
+    var level = h === 0 ? 0 : h <= 1 ? 1 : h <= 2 ? 2 : h <= 4 ? 3 : h <= 6 ? 4 : 5;
+    cell.setAttribute('data-h', level);
+    cell.style.cssText = 'border-radius:6px;background:var(--border);cursor:pointer;transition:transform 0.1s;padding:3px;min-height:44px;position:relative;overflow:hidden;opacity:' + (editable ? '1' : '0.4') + ';';
+    if (level > 0) cell.style.background = 'color-mix(in srgb,var(--accent) ' + (level*18+4) + '%,var(--border))';
+
+    // Topic tags inside cell
+    if (dayData.topics && dayData.topics.length > 0) {
+      var tagContainer = document.createElement('div');
+      tagContainer.style.cssText = 'display:flex;flex-direction:column;gap:1px;';
+      var shown = Math.min(dayData.topics.length, 2);
+      for (var t = 0; t < shown; t++) {
+        var node = findNode(dayData.topics[t]);
+        if (!node) continue;
+        var tag = document.createElement('div');
+        var label = node.title.length > 8 ? node.title.substr(0,7)+'...' : node.title;
+        tag.textContent = label;
+        tag.style.cssText = 'font-size:0.45em;background:rgba(0,0,0,0.35);color:#fff;padding:1px 3px;border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+        tagContainer.appendChild(tag);
+      }
+      cell.appendChild(tagContainer);
+    }
+
+    // Date label
+    var dateLabel = document.createElement('div');
+    dateLabel.style.cssText = 'position:absolute;bottom:2px;right:3px;font-size:0.45em;color:rgba(255,255,255,0.5);';
+    dateLabel.textContent = days[j].getDate();
+    cell.appendChild(dateLabel);
+
+    (function(dateStr2, isEditable) {
+      cell.addEventListener('click', function() {
+        if (isEditable) {
+          openHeatModal(dateStr2);
+        } else {
+          toast(momLate[Math.floor(Math.random()*momLate.length)], 'err');
+        }
+      });
+    })(ds, editable);
+
+    el.appendChild(cell);
+  }
+}
+
+function openHeatModal(ds) {
+  heatEditDate = ds;
+  var dayData = getHeatDay(ds);
+  document.getElementById('heat-modal-date').textContent = 'Log for ' + ds;
+  document.getElementById('heat-hours-input').value = dayData.hours || 0;
+  renderHeatTopicSheet(ds);
+  openModal('heat-modal');
+}
+
+function renderHeatTopicSheet(ds) {
+  var modal = document.getElementById('heat-modal');
+  var existing = document.getElementById('heat-topic-section');
+  if (existing) existing.parentNode.removeChild(existing);
+  var body = modal.querySelector('.modal-body');
+  var sec = document.createElement('div');
+  sec.id = 'heat-topic-section';
+  sec.style.marginTop = '12px';
+
+  var label = document.createElement('div');
+  label.className = 'input-label';
+  label.style.marginBottom = '6px';
+  label.textContent = 'Topics covered this day';
+  sec.appendChild(label);
+
+  var searchWrap = document.createElement('div');
+  searchWrap.className = 'search-bar';
+  searchWrap.style.margin = '0 0 8px 0';
+  searchWrap.innerHTML = '<span>🔍</span><input type="text" placeholder="Search topics..." id="heat-topic-search" style="flex:1;background:none;border:none;outline:none;color:var(--text);font-size:0.9em;font-family:inherit;-webkit-user-select:text;user-select:text;" oninput="filterHeatTopics(this.value)"/>';
+  sec.appendChild(searchWrap);
+
+  var list = document.createElement('div');
+  list.id = 'heat-topic-list';
+  list.style.maxHeight = '160px';
+  list.style.overflowY = 'auto';
+  sec.appendChild(list);
+  body.appendChild(sec);
+  filterHeatTopics('');
+}
+
+function filterHeatTopics(query) {
+  var list = document.getElementById('heat-topic-list');
+  if (!list) return;
+  var flat = flattenTree(state.tree);
+  var dayData = getHeatDay(heatEditDate);
+  var tagged = dayData.topics || [];
+  var filtered = flat.filter(function(n) {
+    if (!query) return true;
+    return n.title.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+  }).slice(0,12);
+  list.innerHTML = '';
+  for (var i = 0; i < filtered.length; i++) {
+    var n = filtered[i];
+    var on = tagged.indexOf(n.id) !== -1;
+    var item = document.createElement('div');
+    item.className = 'topic-chip';
+    item.innerHTML = '<div class="topic-chip-check' + (on ? ' on' : '') + '" id="htc-' + n.id + '">✓</div>' +
+      '<div class="topic-chip-title">' + escHtml(n.title) + '</div>';
+    (function(nid) {
+      item.onclick = function() {
+        var d2 = getHeatDay(heatEditDate);
+        if (!d2.topics) d2.topics = [];
+        var idx = d2.topics.indexOf(nid);
+        if (idx === -1) { d2.topics.push(nid); }
+        else { d2.topics.splice(idx,1); }
+        var chk = document.getElementById('htc-' + nid);
+        if (chk) { idx === -1 ? chk.classList.add('on') : chk.classList.remove('on'); }
+      };
+    })(n.id);
+    list.appendChild(item);
+  }
+}
+
+function saveHeatHours() {
+  var h = parseInt(document.getElementById('heat-hours-input').value) || 0;
+  if (h < 0) h = 0;
+  var dayData = getHeatDay(heatEditDate);
+  dayData.hours = h;
+  if (heatEditDate === todayStr() && h > 0) {
+    state.settings.lastLog = todayStr();
+    state.settings._returnFlag = true;
+    localStorage.removeItem('papaz_idle_scheduled');
+  }
+  save();
+  closeModal('heat-modal');
+  renderDashboard();
+}
+
+function renderWarnFlags(flat) {
+  var list = document.getElementById('warn-flags-list');
+  var sec = document.getElementById('warn-flags-section');
+  if (!list) return;
+  list.innerHTML = '';
+  var today = todayStr();
+  var flags = [];
+  for (var i = 0; i < flat.length; i++) {
+    var n = flat[i];
+    if (n.conf <= 1) {
+      var lastStudied = n.tickDate ? daysBetween(n.tickDate, today) : 999;
+      if (lastStudied > 5 || !n.tickDate) flags.push({title:n.title, conf:n.conf, days:lastStudied});
+    }
+  }
+  if (flags.length === 0) { sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+  for (var j = 0; j < Math.min(flags.length,4); j++) {
+    var f = flags[j];
+    var div = document.createElement('div');
+    div.className = 'warn-flag';
+    div.innerHTML = '<div class="warn-flag-icon">🚨</div><div class="warn-flag-text"><div class="warn-flag-title">' + escHtml(f.title) + '</div>Confidence ' + f.conf + '/5' + (f.days < 999 ? ' - Last studied ' + f.days + ' days ago' : ' - Not yet studied') + '</div>';
+    list.appendChild(div);
+  }
+}
+
+function renderNextExam() {
+  var today = todayStr();
+  var upcoming = [];
+  for (var i = 0; i < state.exams.length; i++) {
+    var e = state.exams[i];
+    var days = daysBetween(today, e.date);
+    if (days >= 0) upcoming.push({name:e.name, days:days});
+  }
+  upcoming.sort(function(a,b) { return a.days - b.days; });
+  var banner = document.getElementById('next-exam-banner');
+  if (upcoming.length === 0) { banner.style.display = 'none'; return; }
+  banner.style.display = 'block';
+  var next = upcoming[0];
+  document.getElementById('next-exam-title').textContent = next.name;
+  var dc = document.getElementById('next-exam-days');
+  dc.textContent = next.days === 0 ? 'TODAY' : next.days + ' days';
+  dc.className = 'exam-countdown ' + (next.days <= 3 ? 'soon' : next.days <= 14 ? 'warn' : 'ok');
+}
+
+/* ============================================================
+   HOUR LOGGING
+   ============================================================ */
+function setupHourLongPress() {
+  var el = document.getElementById('hour-tap');
+  if (!el) return;
+  var pressTimer = null;
+  el.addEventListener('touchstart', function(e) {
+    pressTimer = setTimeout(function() { pressTimer = null; openDrumModal(); }, 500);
+  }, {passive:true});
+  el.addEventListener('touchend', function(e) {
+    if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; quickAddHour(); }
+  }, {passive:true});
+  el.addEventListener('mousedown', function(e) {
+    pressTimer = setTimeout(function() { pressTimer = null; openDrumModal(); }, 500);
+  });
+  el.addEventListener('mouseup', function(e) {
+    if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; quickAddHour(); }
+  });
+}
+
+function quickAddHour() {
+  haptic(20);
+  var today = todayStr();
+  var dayData = getHeatDay(today);
+  dayData.hours = (dayData.hours || 0) + 1;
+  state.settings.lastLog = today;
+  state.settings._returnFlag = true;
+  localStorage.removeItem('papaz_idle_scheduled');
+  save();
+  document.getElementById('today-hours-display').textContent = dayData.hours;
+  var el = document.getElementById('hour-tap');
+  var anim = document.createElement('span');
+  anim.className = 'plus-anim';
+  anim.textContent = '+1h';
+  anim.style.cssText = 'left:50%;top:50%;transform:translateX(-50%);';
+  el.appendChild(anim);
+  setTimeout(function() { if (anim.parentNode) anim.parentNode.removeChild(anim); }, 800);
+  renderDashboard();
+  openLogSheet();
+}
+
+function showStudyNow() {
+  var flat = flattenTree(state.tree);
+  var today = todayStr();
+  var candidates = [];
+  for (var i = 0; i < flat.length; i++) {
+    var n = flat[i];
+    var daysSince = n.tickDate ? daysBetween(n.tickDate, today) : 999;
+    var urgency = (5 - n.conf) * 3 + (n.prio || 0) * 2 + n.diff + Math.min(daysSince,10);
+    candidates.push({node:n, urgency:urgency});
+  }
+  candidates.sort(function(a,b) { return b.urgency - a.urgency; });
+  var body = document.getElementById('studynow-body');
+  if (candidates.length === 0) {
+    body.innerHTML = '<p style="color:var(--muted);">Add some topics to your plan first.</p>';
+  } else {
+    var top = candidates.slice(0,3);
+    var html = '<div style="margin-bottom:12px;font-size:0.9em;color:var(--text2);">Based on confidence, priority, and last studied:</div>';
+    for (var j = 0; j < top.length; j++) {
+      var c = top[j];
+      html += '<div style="padding:12px;background:var(--card2);border-radius:var(--radius-sm);margin-bottom:8px;">';
+      html += '<div style="font-weight:700;margin-bottom:4px;">' + (j===0?'🔥 ':j===1?'⚠️ ':'📌 ') + escHtml(c.node.title) + '</div>';
+      html += '<div style="font-size:0.8em;color:var(--muted);">Conf ' + c.node.conf + ' - Diff ' + c.node.diff + ' - Prio ' + (c.node.prio||0) + '</div>';
+      html += '</div>';
+    }
+    body.innerHTML = html;
+  }
+  openModal('studynow-modal');
+}
+
+/* ============================================================
+   DRUM MODAL
+   ============================================================ */
+function openDrumModal() {
+  haptic(30);
+  var todayH = getHeatDay(todayStr()).hours || 0;
+  if (todayH > 20) todayH = 20;
+  drumDigits = [Math.floor(todayH / 10), todayH % 10];
+  buildDrum('drum-tens', 0);
+  buildDrum('drum-units', 1);
+  updateDrumReadout();
+  openModal('drum-modal');
+}
+
+function buildDrum(elId, idx) {
+  var drum = document.getElementById(elId);
+  if (!drum) return;
+  drum.innerHTML = '';
+  var line = document.createElement('div');
+  line.className = 'drum-line';
+  drum.appendChild(line);
+  var track = document.createElement('div');
+  track.className = 'drum-track';
+  track.id = elId + '-track';
+  drum.appendChild(track);
+  renderDrumTrack(elId, idx);
+  setupDrumDrag(drum, idx);
+}
+
+function renderDrumTrack(elId, idx) {
+  var track = document.getElementById(elId + '-track');
+  if (!track) return;
+  track.innerHTML = '';
+  var val = drumDigits[idx];
+  for (var i = -1; i <= 1; i++) {
+    var v = ((val + i) % 10 + 10) % 10;
+    var cell = document.createElement('div');
+    cell.className = 'drum-cell' + (i !== 0 ? ' dim' : '');
+    cell.textContent = v;
+    track.appendChild(cell);
+  }
+  track.style.transition = 'none';
+  track.style.top = (-HALF_H) + 'px';
+}
+
+function stepDrumDigit(idx, dir) {
+  var current = drumDigits[0] * 10 + drumDigits[1];
+  var next = current + dir;
+  if (next < 0) next = 0;
+  if (next > 20) next = 20;
+  drumDigits[0] = Math.floor(next / 10);
+  drumDigits[1] = next % 10;
+  var elId = idx === 0 ? 'drum-tens' : 'drum-units';
+  var track = document.getElementById(elId + '-track');
+  if (!track) return;
+  var endTop = -HALF_H - dir * CELL_H;
+  track.style.transition = 'none';
+  track.style.top = (-HALF_H) + 'px';
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      track.style.transition = 'top 0.18s cubic-bezier(0.25,0.46,0.45,0.94)';
+      track.style.top = endTop + 'px';
+      setTimeout(function() { renderDrumTrack(elId, idx); }, 200);
+    });
+  });
+  updateDrumReadout();
+}
+
+function setupDrumDrag(drum, idx) {
+  var startY = null, accum = 0;
+  drum.addEventListener('touchstart', function(e) { e.preventDefault(); startY = e.touches[0].clientY; accum = 0; }, {passive:false});
+  drum.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+    if (startY === null) return;
+    var delta = startY - e.touches[0].clientY; startY = e.touches[0].clientY; accum += delta;
+    while (accum >= CELL_H) { accum -= CELL_H; stepDrumDigit(idx,1); }
+    while (accum <= -CELL_H) { accum += CELL_H; stepDrumDigit(idx,-1); }
+  }, {passive:false});
+  drum.addEventListener('touchend', function() { startY = null; accum = 0; });
+  drum.addEventListener('mousedown', function(e) {
+    e.preventDefault(); startY = e.clientY; accum = 0;
+    function onMove(ev) {
+      var delta = startY - ev.clientY; startY = ev.clientY; accum += delta;
+      while (accum >= CELL_H) { accum -= CELL_H; stepDrumDigit(idx,1); }
+      while (accum <= -CELL_H) { accum += CELL_H; stepDrumDigit(idx,-1); }
+    }
+    function onUp() { window.removeEventListener('mousemove',onMove); window.removeEventListener('mouseup',onUp); startY=null; accum=0; }
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  });
+}
+
+function updateDrumReadout() {
+  var h = drumDigits[0]*10 + drumDigits[1];
+  document.getElementById('drum-readout').textContent = pad(h) + ' hours';
+}
+
+function confirmDrumHours() {
+  haptic(20);
+  var h = drumDigits[0]*10 + drumDigits[1];
+  if (h === 0) { toast('Set at least 1 hour.','err'); return; }
+  var today = todayStr();
+  var dayData = getHeatDay(today);
+  dayData.hours = h;
+  state.settings.lastLog = today;
+  state.settings._returnFlag = true;
+  localStorage.removeItem('papaz_idle_scheduled');
+  save();
+  closeModal('drum-modal');
+  document.getElementById('today-hours-display').textContent = dayData.hours;
+  renderDashboard();
+  openLogSheet();
+  toast(h + 'h logged!','ok');
+}
+
+/* ============================================================
+   LOG TOPIC SHEET
+   ============================================================ */
+function openLogSheet() {
+  sheetSelectedIds = [];
+  renderSheetTopics('');
+  document.getElementById('sheet-search').value = '';
+  document.getElementById('log-sheet').classList.add('open');
+}
+
+function closeLogSheet() { document.getElementById('log-sheet').classList.remove('open'); }
+
+function renderSheetTopics(query) {
+  var flat = flattenTree(state.tree);
+  var today = todayStr();
+  var smart = [];
+  for (var i = 0; i < flat.length; i++) {
+    var n = flat[i];
+    if (query && n.title.toLowerCase().indexOf(query.toLowerCase()) === -1) continue;
+    var score = 0;
+    if (n.conf <= 2) score += 3;
+    if (!n.tickDate || daysBetween(n.tickDate, today) > 3) score += 2;
+    if (n.prio >= 3) score += 2;
+    smart.push({node:n, score:score});
+  }
+  smart.sort(function(a,b) { return b.score - a.score; });
+  var display = smart.slice(0, query ? 20 : 10);
+  var container = document.getElementById('sheet-topics');
+  container.innerHTML = '';
+  if (display.length === 0) {
+    container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);">No topics found.</div>';
+    return;
+  }
+  for (var j = 0; j < display.length; j++) {
+    var node = display[j].node;
+    var chip = document.createElement('div');
+    chip.className = 'topic-chip';
+    var checked = sheetSelectedIds.indexOf(node.id) !== -1;
+    chip.innerHTML = '<div class="topic-chip-check' + (checked?' on':'') + '" id="chip-check-' + node.id + '">✓</div>' +
+      '<div class="topic-chip-title">' + escHtml(node.title) + '</div>' +
+      '<div class="topic-chip-code" style="color:' + confColor(node.conf) + ';">conf ' + node.conf + '</div>';
+    (function(nid) {
+      chip.onclick = function() {
+        var idx = sheetSelectedIds.indexOf(nid);
+        if (idx === -1) sheetSelectedIds.push(nid); else sheetSelectedIds.splice(idx,1);
+        var chk = document.getElementById('chip-check-' + nid);
+        if (chk) { sheetSelectedIds.indexOf(nid) !== -1 ? chk.classList.add('on') : chk.classList.remove('on'); }
+      };
+    })(node.id);
+    container.appendChild(chip);
+  }
+}
+
+function filterSheetTopics(q) { renderSheetTopics(q); }
+
+function confirmSheetTicks() {
+  var today = todayStr();
+  var dayData = getHeatDay(today);
+  if (!dayData.topics) dayData.topics = [];
+  for (var i = 0; i < sheetSelectedIds.length; i++) {
+    var n = findNode(sheetSelectedIds[i]);
+    if (n) { n.ticked = true; n.tickDate = today; }
+    if (dayData.topics.indexOf(sheetSelectedIds[i]) === -1) dayData.topics.push(sheetSelectedIds[i]);
+  }
+  save();
+  closeLogSheet();
+  if (sheetSelectedIds.length > 0) toast(sheetSelectedIds.length + ' topic(s) marked studied','ok');
+  renderTree();
+  renderDashboard();
+}
+
+/* ============================================================
+   PLAN - TREE
+   ============================================================ */
+function makeNode(title, depth) {
+  return {id:uid(), title:title, conf:0, diff:0, prio:0, context:'', children:[], ticked:false, tickDate:null, depth:depth||0};
+}
+
+function addRootTopic() {
+  var input = document.getElementById('new-topic-input');
+  var title = input.value.trim();
+  if (!title) return;
+  state.tree.push(makeNode(title,0));
+  input.value = '';
+  save();
+  renderTree();
+  toast('Topic added','ok');
+}
+
+function parseSyllabus() {
+  var raw = document.getElementById('paste-syllabus').value.trim();
+  if (!raw) return;
+  var lines = raw.split('\n');
+  var nodes = [];
+  var stack = [];
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].trim();
+    if (!line) continue;
+    // Skip separator lines (===, ---, ***) and non-decimal lines at root level
+    if (/^[=\-*#]{3,}/.test(line)) continue;
+    var depth = 0, title = line;
+    var decMatch = line.match(/^(\d+(\.\d+)*)[.)]\s*(.*)/);
+    var indentMatch = !decMatch && lines[i].match(/^(\s+)/) && lines[i].trim().length > 0;
+    if (!decMatch && !indentMatch) continue;
+    if (decMatch) { depth = decMatch[1].split('.').length - 1; title = decMatch[3]; }
+    else { var spaces = lines[i].match(/^(\s*)/)[1].length; depth = Math.floor(spaces/2); if (depth === 0) continue; }
+    var node = makeNode(title, depth);
+    if (depth === 0) { nodes.push(node); stack = [node]; }
+    else {
+      while (stack.length > depth) stack.pop();
+      if (stack.length > 0) { var parent = stack[stack.length-1]; if (!parent.children) parent.children = []; parent.children.push(node); }
+      else nodes.push(node);
+      stack.push(node);
+    }
+  }
+  if (nodes.length === 0) { toast('Could not parse. Check format.','err'); return; }
+  state.tree = state.tree.concat(nodes);
+  document.getElementById('paste-syllabus').value = '';
+  save(); renderTree();
+  toast('Parsed - ' + nodes.length + ' root topics','ok');
+}
+
+function renderTree() {
+  var container = document.getElementById('tree-container');
+  var empty = document.getElementById('tree-empty');
+  container.innerHTML = '';
+  if (!state.tree || state.tree.length === 0) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  if (panicMode) { renderPanicMode(container); return; }
+  renderNodes(state.tree, container, 0);
+}
+
+function renderPanicMode(container) {
+  var flat = flattenTree(state.tree);
+  flat.sort(function(a,b) { return a.conf - b.conf || b.diff - a.diff; });
+  var low = flat.filter(function(n) { return n.conf <= 2; });
+  if (low.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--green);">All topics confidence 3 or above. You might be okay.</div>';
+    return;
+  }
+  for (var i = 0; i < low.length; i++) { container.appendChild(buildTreeRow(low[i], 0)); }
+}
+
+function renderNodes(nodes, container, depth) {
+  for (var i = 0; i < nodes.length; i++) {
+    var n = nodes[i];
+    if (treeFilterQuery && !nodeMatchesFilter(n, treeFilterQuery)) continue;
+    var wrapper = document.createElement('div');
+    wrapper.className = 'tree-item';
+    wrapper.id = 'tree-item-' + n.id;
+    wrapper.appendChild(buildTreeRow(n, depth));
+    if (n.children && n.children.length > 0) {
+      var ch = document.createElement('div');
+      ch.className = 'tree-children' + (treeFilterQuery ? ' open' : '');
+      ch.id = 'tree-children-' + n.id;
+      renderNodes(n.children, ch, depth+1);
+      wrapper.appendChild(ch);
+    }
+    container.appendChild(wrapper);
+  }
+}
+
+function buildTreeRow(node, depth) {
+  var row = document.createElement('div');
+  row.className = 'tree-row tree-indent-' + Math.min(depth,3);
+  var hasChildren = node.children && node.children.length > 0;
+
+  var toggle = document.createElement('div');
+  toggle.className = 'tree-toggle';
+  toggle.textContent = hasChildren ? '▶' : ' ';
+  toggle.id = 'toggle-' + node.id;
+
+  var dot = document.createElement('div');
+  dot.className = 'tree-conf';
+  dot.style.background = confColor(node.conf);
+
+  var title = document.createElement('div');
+  title.className = 'tree-title';
+  title.textContent = node.title;
+
+  var tick = document.createElement('div');
+  tick.className = 'tree-tick' + (node.ticked && node.tickDate === todayStr() ? ' ticked' : '');
+  tick.textContent = '✓';
+
+  row.appendChild(toggle);
+  row.appendChild(dot);
+  row.appendChild(title);
+  row.appendChild(tick);
+
+  var pressTimer = null;
+
+  function startPress() {
+    pressTimer = setTimeout(function() {
+      pressTimer = null;
+      openTopicModal(node.id);
+    }, 500);
+  }
+
+  function cancelPress() { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } }
+
+  tick.addEventListener('touchstart', function(e) { e.stopPropagation(); }, {passive:true});
+  tick.addEventListener('touchend', function(e) { e.stopPropagation(); e.preventDefault(); cancelPress(); toggleTick(node); }, {passive:false});
+  tick.addEventListener('click', function(e) { e.stopPropagation(); cancelPress(); toggleTick(node); });
+
+  row.addEventListener('touchstart', function(e) {
+    if (e.target === tick) return;
+    startPress();
+  }, {passive:true});
+  row.addEventListener('touchmove', function() { cancelPress(); }, {passive:true});
+  row.addEventListener('touchend', function(e) {
+    if (e.target === tick) return;
+    if (pressTimer) {
+      cancelPress();
+      if (hasChildren) toggleChildren(node.id, toggle);
+    }
+  }, {passive:true});
+
+  row.addEventListener('mousedown', function(e) { if (e.target !== tick) startPress(); });
+  row.addEventListener('mouseup', function(e) {
+    if (e.target === tick) return;
+    if (pressTimer) { cancelPress(); if (hasChildren) toggleChildren(node.id, toggle); }
+  });
+
+  title.addEventListener('touchend', function(e) {
+    e.stopPropagation(); cancelPress();
+    if (!hasChildren) openTopicModal(node.id);
+  }, {passive:true});
+  title.addEventListener('click', function(e) {
+    e.stopPropagation(); cancelPress();
+    if (!hasChildren) openTopicModal(node.id);
+  });
+
+  return row;
+}
+
+function toggleChildren(id, toggleEl) {
+  var ch = document.getElementById('tree-children-' + id);
+  if (!ch) return;
+  var isOpen = ch.classList.contains('open');
+  ch.classList.toggle('open');
+  toggleEl.textContent = isOpen ? '▶' : '▼';
+}
+
+function toggleTick(node) {
+  var today = todayStr();
+  if (node.ticked && node.tickDate === today) {
+    node.ticked = false; node.tickDate = null;
+  } else {
+    node.ticked = true; node.tickDate = today;
+  }
+  save(); renderTree();
+}
+
+function expandAll() {
+  document.querySelectorAll('.tree-children').forEach(function(c) { c.classList.add('open'); });
+  document.querySelectorAll('.tree-toggle').forEach(function(t) { if (t.textContent === '▶') t.textContent = '▼'; });
+}
+function collapseAll() {
+  document.querySelectorAll('.tree-children').forEach(function(c) { c.classList.remove('open'); });
+  document.querySelectorAll('.tree-toggle').forEach(function(t) { if (t.textContent === '▼') t.textContent = '▶'; });
+}
+function togglePanic() {
+  panicMode = !panicMode;
+  document.body.classList.toggle('panic-mode', panicMode);
+  var btn = document.getElementById('panic-btn');
+  btn.textContent = panicMode ? 'Exit Panic' : 'Panic Mode';
+  btn.style.background = panicMode ? 'var(--red-bg)' : '';
+  renderTree();
+}
+
+/* ============================================================
+   TOPIC MODAL
+   ============================================================ */
+function updateSliderVal(inputId, valId) {
+  var el = document.getElementById(inputId);
+  var val = document.getElementById(valId);
+  if (el && val) val.textContent = el.value;
+}
+
+function openTopicModal(id) {
+  editingTopicId = id;
+  deleteTopicConfirmPending = false;
+  var btn = document.getElementById('tm-delete-btn');
+  var warn = document.getElementById('tm-delete-warn');
+  if (btn) { btn.textContent = 'Delete Topic'; btn.style.background = ''; btn.style.color = ''; }
+  if (warn) warn.style.display = 'none';
+  var node = findNode(id);
+  if (!node) return;
+  document.getElementById('topic-modal-title').textContent = node.title;
+  document.getElementById('tm-title').value = node.title;
+  document.getElementById('tm-context').value = node.context || '';
+  var conf = document.getElementById('tm-conf');
+  var diff = document.getElementById('tm-diff');
+  var prio = document.getElementById('tm-prio');
+  conf.value = node.conf || 0; document.getElementById('tm-conf-val').textContent = conf.value;
+  diff.value = node.diff || 0; document.getElementById('tm-diff-val').textContent = diff.value;
+  prio.value = node.prio || 0; document.getElementById('tm-prio-val').textContent = prio.value;
+
+  var tagged = state.notes.filter(function(n) { return n.tagId === id; });
+  var vaultSec = document.getElementById('tm-vault-notes');
+  var vaultList = document.getElementById('tm-vault-notes-list');
+  if (tagged.length > 0) {
+    vaultSec.style.display = 'block';
+    vaultList.innerHTML = '';
+    for (var i = 0; i < tagged.length; i++) {
+      var note = tagged[i];
+      var div = document.createElement('div');
+      div.style.cssText = 'padding:8px;background:var(--card2);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;';
+      div.innerHTML = '<div style="font-weight:700;font-size:0.85em;">' + escHtml(note.title) + '</div><div style="font-size:0.78em;color:var(--muted);">' + (note.type||'Note') + '</div>';
+      (function(nid) {
+        div.onclick = function() {
+          closeModal('topic-modal');
+          showPage('vault', document.getElementById('tab-vault'));
+          setTimeout(function() { openNoteView(nid); }, 300);
+        };
+      })(note.id);
+      vaultList.appendChild(div);
+    }
+  } else { vaultSec.style.display = 'none'; }
+  addBranchParentId = id;
+  openModal('topic-modal');
+}
+
+function saveTopicModal() {
+  haptic(20);
+  var node = findNode(editingTopicId);
+  if (!node) return;
+  node.title = document.getElementById('tm-title').value.trim() || node.title;
+  node.context = document.getElementById('tm-context').value;
+  node.conf = parseInt(document.getElementById('tm-conf').value) || 0;
+  node.diff = parseInt(document.getElementById('tm-diff').value) || 0;
+  node.prio = parseInt(document.getElementById('tm-prio').value) || 0;
+  save(); closeModal('topic-modal'); renderTree(); renderDashboard();
+  toast('Saved','ok');
+}
+
+var deleteTopicConfirmPending = false;
+
+function deleteEditingTopic() {
+  var node = findNode(editingTopicId);
+  if (!node) return;
+  var hasBranch = node.children && node.children.length > 0;
+  var warn = document.getElementById('tm-delete-warn');
+  var btn = document.getElementById('tm-delete-btn');
+  if (!deleteTopicConfirmPending) {
+    deleteTopicConfirmPending = true;
+    if (hasBranch) { warn.style.display = 'block'; }
+    btn.textContent = hasBranch ? 'Confirm - Delete Entire Branch' : 'Confirm Delete';
+    btn.style.background = 'var(--red)';
+    btn.style.color = '#fff';
+    setTimeout(function() {
+      deleteTopicConfirmPending = false;
+      if (btn) { btn.textContent = 'Delete Topic'; btn.style.background = ''; btn.style.color = ''; }
+      if (warn) warn.style.display = 'none';
+    }, 3000);
+    return;
+  }
+  removeNode(editingTopicId);
+  save(); closeModal('topic-modal'); renderTree(); renderDashboard();
+  toast('Deleted','ok');
+  deleteTopicConfirmPending = false;
+}
+
+function addBranchToEditing() {
+  closeModal('topic-modal');
+  document.getElementById('branch-title-input').value = '';
+  openModal('branch-modal');
+}
+
+function confirmAddBranch() {
+  haptic(20);
+  var title = document.getElementById('branch-title-input').value.trim();
+  if (!title) { toast('Enter a branch title','err'); return; }
+  var parent = findNode(addBranchParentId);
+  if (parent) {
+    if (!parent.children) parent.children = [];
+    parent.children.push(makeNode(title, (parent.depth||0)+1));
+    save(); renderTree(); closeModal('branch-modal');
+    toast('Branch added','ok');
+  } else {
+    state.tree.push(makeNode(title,0));
+    save(); renderTree(); closeModal('branch-modal');
+    toast('Topic added','ok');
+  }
+}
+
+/* ============================================================
+   EXPORT / IMPORT TREE
+   ============================================================ */
+function exportTree() {
+  var data = {papaz_tree:true, version:2, subject:state.user.subject, tree:state.tree};
+  shareOrDownload(JSON.stringify(data,null,2), 'papaz_plan_' + (state.user.subject||'').replace(/\s/g,'_') + '.papaz');
+}
+
+function exportBackup() {
+  var data = {papaz_backup:true, version:2, exported: new Date().toISOString(), state:state};
+  shareOrDownload(JSON.stringify(data,null,2), 'papaz_backup_' + new Date().toISOString().slice(0,10) + '.papaz');
+}
+
+var treeFilterQuery = '';
+
+function filterTree(q) {
+  treeFilterQuery = (q || '').toLowerCase().trim();
+  renderTree();
+}
+
+function nodeMatchesFilter(node, q) {
+  if (node.title && node.title.toLowerCase().indexOf(q) !== -1) return true;
+  if (node.children) {
+    for (var i = 0; i < node.children.length; i++) {
+      if (nodeMatchesFilter(node.children[i], q)) return true;
+    }
+  }
+  return false;
+}
+
+function importTree(input) {
+  var file = input.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      if (!data.papaz_tree || !data.tree) { toast('Invalid plan file','err'); return; }
+      if (state.tree && state.tree.length > 0) {
+        showDelPopup('Replace existing plan?', 'Your current plan will be lost.', function() {
+          state.tree = data.tree; save(); renderTree(); toast('Plan imported','ok');
+        });
+      } else { state.tree = data.tree; save(); renderTree(); toast('Plan imported','ok'); }
+    } catch(err) { toast('Failed to read file','err'); }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+/* ============================================================
+   SHARE / DOWNLOAD
+   ============================================================ */
+function shareOrDownload(text, filename) {
+  var isCapacitor = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
+  if (isCapacitor) {
+    var Plugins = window.Capacitor.Plugins;
+    if (Plugins && Plugins.Filesystem && Plugins.Share) {
+      Plugins.Filesystem.writeFile({
+        path: filename, data: btoa(unescape(encodeURIComponent(text))),
+        directory: 'CACHE'
+      }).then(function() {
+        return Plugins.Filesystem.getUri({path: filename, directory: 'CACHE'});
+      }).then(function(uriResult) {
+        return Plugins.Share.share({title: filename, url: uriResult.uri, dialogTitle: 'Save or share file'});
+      }).then(function() {
+        toast('Exported', 'ok');
+      }).catch(function(err) {
+        toast('Export failed', 'err');
+      });
+      return;
+    }
+  }
+  var blob = new Blob([text],{type:'text/plain'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+function exportWorkspace() {
+  shareOrDownload(JSON.stringify(state,null,2), 'papaz_workspace_' + todayStr() + '.json');
+}
+
+function importWorkspace(input) {
+  var file = input.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var parsed = JSON.parse(e.target.result);
+      if (!parsed.user) { toast('Invalid workspace file','err'); return; }
+      showDelPopup('Replace workspace?', 'Your current data will be overwritten.', function() {
+        state = parsed; save(); applyTheme();
+        renderDashboard(); renderTree(); renderVault(); renderLedger(); renderSettings();
+        toast('Workspace imported','ok');
+      });
+    } catch(err) { toast('Failed to read file','err'); }
+  };
+  reader.readAsText(file); input.value = '';
+}
+
+/* ============================================================
+   TAG SUGGESTIONS
+   ============================================================ */
+function showTagSuggestions(query, suggestionsId, hiddenId) {
+  var flat = flattenTree(state.tree);
+  var box = document.getElementById(suggestionsId);
+  var hidden = document.getElementById(hiddenId);
+  if (!query || !box) { if (box) box.style.display = 'none'; return; }
+  var matches = flat.filter(function(n) {
+    return n.title.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+  }).slice(0,6);
+  if (matches.length === 0) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  box.innerHTML = '';
+  for (var i = 0; i < matches.length; i++) {
+    var item = document.createElement('div');
+    item.className = 'tag-suggestion-item';
+    item.textContent = matches[i].title;
+    (function(node, sId, hId) {
+      item.ontouchend = item.onclick = function(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        var textInput = document.getElementById(hId).previousElementSibling;
+        if (textInput) textInput.value = node.title;
+        document.getElementById(hId).value = node.id;
+        document.getElementById(sId).style.display = 'none';
+      };
+    })(matches[i], suggestionsId, hiddenId);
+    box.appendChild(item);
+  }
+}
+
+</script>
+<script>
+/* ============================================================
+   VAULT
+   ============================================================ */
+var selectedNoteType = '';
+
+function setVaultSort(s, btn) {
+  vaultSort = s;
+  document.querySelectorAll('.sort-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderVault();
+}
+
+function setVaultFilter(f, el) {
+  vaultFilter = f;
+  document.querySelectorAll('#vault-filter-chips .pill').forEach(function(p) { p.classList.remove('active'); });
+  el.classList.add('active');
+  renderVault();
+}
+
+function selectNoteType(el) {
+  document.querySelectorAll('#vault-type-pills .pill').forEach(function(p) { p.classList.remove('active'); });
+  if (selectedNoteType === el.getAttribute('data-type')) { selectedNoteType = ''; }
+  else { el.classList.add('active'); selectedNoteType = el.getAttribute('data-type'); }
+}
+
+function saveVaultNote() {
+  haptic(20);
+  var title = document.getElementById('vault-note-title').value.trim();
+  var body = document.getElementById('vault-note-body').value.trim();
+  var tagId = document.getElementById('vault-tag-id').value;
+  var tagInput = document.getElementById('vault-tag-input').value.trim();
+  if (!title || !body) { toast('Title and content required','err'); return; }
+  var note = {
+    id: uid(), title: title, body: body,
+    tagId: tagId, tagTitle: tagInput,
+    type: selectedNoteType, date: todayStr(),
+    pinned: false
+  };
+  state.notes.unshift(note);
+  save();
+  document.getElementById('vault-note-title').value = '';
+  document.getElementById('vault-note-body').value = '';
+  document.getElementById('vault-tag-input').value = '';
+  document.getElementById('vault-tag-id').value = '';
+  document.getElementById('vault-tag-suggestions').style.display = 'none';
+  selectedNoteType = '';
+  document.querySelectorAll('#vault-type-pills .pill').forEach(function(p) { p.classList.remove('active'); });
+  renderVault();
+  toast('Note saved','ok');
+  // Animate newest note
+  setTimeout(function() {
+    var list = document.getElementById('vault-list');
+    if (list && list.children.length > 0) {
+      var newest = list.querySelector('.note-card:not(.pinned)');
+      if (newest) { newest.classList.add('sinking'); setTimeout(function() { newest.classList.remove('sinking'); }, 500); }
+    }
+  }, 100);
+}
+
+function renderVault() {
+  var query = document.getElementById('vault-search') ? document.getElementById('vault-search').value.toLowerCase() : '';
+  var list = document.getElementById('vault-list');
+  var empty = document.getElementById('vault-empty');
+  if (!list) return;
+  list.innerHTML = '';
+
+  var notes = state.notes.filter(function(n) {
+    if (vaultFilter !== 'all' && n.type !== vaultFilter) return false;
+    if (!query) return true;
+    return (n.title||'').toLowerCase().indexOf(query) !== -1 ||
+           (n.body||'').toLowerCase().indexOf(query) !== -1 ||
+           (n.tagTitle||'').toLowerCase().indexOf(query) !== -1;
+  });
+
+  if (vaultSort === 'type') {
+    notes.sort(function(a,b) {
+      var ta = a.type||''; var tb = b.type||'';
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return ta < tb ? -1 : ta > tb ? 1 : 0;
+    });
+  } else {
+    notes.sort(function(a,b) {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      var ta = a.tagTitle||''; var tb = b.tagTitle||'';
+      return ta < tb ? -1 : ta > tb ? 1 : 0;
+    });
+  }
+
+  if (notes.length === 0) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  for (var i = 0; i < notes.length; i++) {
+    var note = notes[i];
+    var card = document.createElement('div');
+    card.className = 'note-card' + (note.pinned ? ' pinned' : '');
+    var tagHtml = note.type ? '<span class="note-tag">' + escHtml(note.type) + '</span> ' : '';
+    var topicHtml = note.tagTitle ? '<div style="font-size:0.72em;color:var(--accent);margin-bottom:4px;">📌 ' + escHtml(note.tagTitle) + '</div>' : '';
+    var preview = note.body.length > 120 ? note.body.slice(0,120) + '...' : note.body;
+    card.innerHTML = tagHtml + topicHtml +
+      '<div class="note-title">' + escHtml(note.title) + '</div>' +
+      '<div class="note-body">' + escHtml(preview) + '</div>' +
+      '<div class="note-meta"><span>' + note.date + '</span>' +
+      '<button class="note-pin-btn' + (note.pinned ? ' pinned' : '') + '" id="pin-btn-' + note.id + '">' + (note.pinned ? '📌' : '📍') + '</button></div>';
+
+    (function(nid) {
+      var pinBtn = card.querySelector('.note-pin-btn');
+      pinBtn.addEventListener('click', function(e) { e.stopPropagation(); toggleNotePin(nid); });
+      pinBtn.addEventListener('touchend', function(e) { e.stopPropagation(); toggleNotePin(nid); }, {passive:true});
+
+      var pressTimer = null;
+      card.addEventListener('touchstart', function() {
+        pressTimer = setTimeout(function() {
+          pressTimer = null;
+          showDelPopup('Delete this note?', '', function() {
+            state.notes = state.notes.filter(function(n) { return n.id !== nid; });
+            save(); renderVault(); toast('Deleted','ok');
+          });
+        }, 500);
+      }, {passive:true});
+      card.addEventListener('touchmove', function() {
+        if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+      }, {passive:true});
+      card.addEventListener('touchend', function() {
+        if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; openNoteView(nid); }
+      }, {passive:true});
+      card.addEventListener('mousedown', function() {
+        pressTimer = setTimeout(function() {
+          pressTimer = null;
+          showDelPopup('Delete this note?', '', function() {
+            state.notes = state.notes.filter(function(n) { return n.id !== nid; });
+            save(); renderVault(); toast('Deleted','ok');
+          });
+        }, 500);
+      });
+      card.addEventListener('mouseup', function() {
+        if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; openNoteView(nid); }
+      });
+    })(note.id);
+
+    list.appendChild(card);
+  }
+}
+
+function toggleNotePin(id) {
+  var note = state.notes.filter(function(n) { return n.id === id; })[0];
+  if (note) { note.pinned = !note.pinned; save(); renderVault(); }
+}
+
+function openNoteView(id) {
+  var note = state.notes.filter(function(n) { return n.id === id; })[0];
+  if (!note) return;
+  document.getElementById('nv-title').textContent = note.title;
+  document.getElementById('nv-tag').innerHTML = note.tagTitle ? '<span style="font-size:0.8em;color:var(--accent);">📌 ' + escHtml(note.tagTitle) + '</span>' : '';
+  document.getElementById('nv-type').innerHTML = note.type ? '<span class="note-tag">' + escHtml(note.type) + '</span>' : '';
+  document.getElementById('nv-body').textContent = note.body;
+  document.getElementById('nv-date').textContent = note.date;
+  openModal('note-view-modal');
+}
+
+/* ============================================================
+   LEDGER - EXAMS
+   ============================================================ */
+var examNotifyDaysNew = [7,3];
+
+function toggleNotifyPill(el) {
+  var days = parseInt(el.getAttribute('data-days'));
+  var idx = examNotifyDaysNew.indexOf(days);
+  if (idx === -1) { examNotifyDaysNew.push(days); el.classList.add('active'); }
+  else { examNotifyDaysNew.splice(idx,1); el.classList.remove('active'); }
+}
+
+function openCustomNotifyModal() { openModal('custom-notify-modal'); }
+
+function confirmCustomNotify() {
+  var days = parseInt(document.getElementById('custom-notify-days').value);
+  if (!days || days < 1) { toast('Enter valid days','err'); return; }
+  if (examNotifyDaysNew.indexOf(days) === -1) { examNotifyDaysNew.push(days); }
+  var row = document.getElementById('exam-notify-row');
+  var addBtn = row.querySelector('.notify-add-btn');
+  var chip = document.createElement('span');
+  chip.className = 'notify-date-chip';
+  chip.innerHTML = days + ' days <button class="notify-date-remove" onclick="removeCustomNotify(this,' + days + ')">x</button>';
+  row.insertBefore(chip, addBtn);
+  closeModal('custom-notify-modal');
+  document.getElementById('custom-notify-days').value = '';
+}
+
+function removeCustomNotify(btn, days) {
+  var idx = examNotifyDaysNew.indexOf(days);
+  if (idx !== -1) examNotifyDaysNew.splice(idx,1);
+  btn.parentNode.parentNode.removeChild(btn.parentNode);
+}
+
+function saveExam() {
+  haptic(20);
+  var name = document.getElementById('exam-name-input').value.trim();
+  var date = document.getElementById('exam-date-input').value;
+  var tagId = document.getElementById('exam-tag-id').value;
+  var tagTitle = document.getElementById('exam-tag-input').value.trim();
+  if (!name || !date) { toast('Name and date required','err'); return; }
+  var exam = {
+    id: uid(), name: name, date: date,
+    tagId: tagId, tagTitle: tagTitle,
+    notifyDays: examNotifyDaysNew.slice(),
+    score: null, total: null
+  };
+  state.exams.push(exam);
+  save();
+  // Schedule a notification for each notifyDays entry
+  var examDateMs = new Date(date).getTime();
+  var now2 = Date.now();
+  for (var nd = 0; nd < examNotifyDaysNew.length; nd++) {
+    var fireAt = examDateMs - (examNotifyDaysNew[nd] * 86400000);
+    if (fireAt > now2) {
+      pushAlarm({
+        notifId: 2000 + parseInt(exam.id.slice(-4), 36) + nd,
+        fireAt: fireAt,
+        title: 'Papaz - ' + name,
+        body: examNotifyDaysNew[nd] + ' days until ' + name + '. are you ready.'
+      });
+    }
+  }
+  document.getElementById('exam-name-input').value = '';
+  document.getElementById('exam-date-input').value = '';
+  document.getElementById('exam-tag-input').value = '';
+  document.getElementById('exam-tag-id').value = '';
+  examNotifyDaysNew = [7,3];
+  document.querySelectorAll('#exam-notify-row .pill').forEach(function(p) {
+    var d = parseInt(p.getAttribute('data-days'));
+    if (d === 7 || d === 3) p.classList.add('active'); else p.classList.remove('active');
+  });
+  document.querySelectorAll('#exam-notify-row .notify-date-chip').forEach(function(c) { c.parentNode.removeChild(c); });
+  renderLedger(); renderDashboard();
+  toast('Exam added','ok');
+}
+
+function renderLedger() {
+  renderExams();
+  renderTests();
+  renderPaceAnalysis();
+}
+
+function renderExams() {
+  var list = document.getElementById('exams-list');
+  var listOld = document.getElementById('exams-list-old');
+  var moreSection = document.getElementById('exams-scroll-more');
+  if (!list) return;
+  list.innerHTML = '';
+  if (listOld) listOld.innerHTML = '';
+
+  var today = todayStr();
+  var sorted = state.exams.slice().sort(function(a,b) {
+    var ap = daysBetween(today,a.date) < 0 ? 1 : 0;
+    var bp = daysBetween(today,b.date) < 0 ? 1 : 0;
+    if (ap !== bp) return ap - bp;
+    return a.date < b.date ? -1 : 1;
+  });
+
+  // Red unscored passed exams always first
+  var passed = sorted.filter(function(e) { return daysBetween(today,e.date) < 0 && (e.score === null || e.score === undefined); });
+  var rest = sorted.filter(function(e) { return !(daysBetween(today,e.date) < 0 && (e.score === null || e.score === undefined)); });
+  var final = passed.concat(rest);
+
+  var pinned = final.slice(0,3);
+  var older = final.slice(3);
+
+  for (var i = 0; i < pinned.length; i++) { list.appendChild(buildExamCard(pinned[i])); }
+
+  if (older.length > 0) {
+    moreSection.style.display = 'block';
+    for (var j = 0; j < older.length; j++) { listOld.appendChild(buildExamCard(older[j])); }
+  } else { moreSection.style.display = 'none'; }
+}
+
+function buildExamCard(e) {
+  var today = todayStr();
+  var days = daysBetween(today, e.date);
+  var isPassed = days < 0;
+  var isUnscored = e.score === null || e.score === undefined;
+  var card = document.createElement('div');
+  card.className = 'exam-card' + (isPassed && isUnscored ? ' passed-unscored' : '');
+  card.id = 'exam-card-' + e.id;
+
+  var countdownClass = isPassed ? 'passed' : days <= 3 ? 'soon' : days <= 14 ? 'warn' : 'ok';
+  var countdownText = isPassed ? (isUnscored ? 'LOG SCORE' : 'Done') : days === 0 ? 'TODAY' : days + ' days';
+
+  var topicHtml = e.tagTitle ? '<span>📌 ' + escHtml(e.tagTitle) + '</span>' : '';
+  var scoreHtml = (!isUnscored) ? '<span style="color:var(--green);font-weight:700;">' + e.score + '/' + e.total + ' (' + Math.round(e.score/e.total*100) + '%)</span>' : '';
+
+  card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
+    '<div><div class="exam-title">' + escHtml(e.name) + '</div>' +
+    '<div class="exam-meta">' + (e.date ? '<span>' + e.date + '</span>' : '') + topicHtml + scoreHtml + '</div></div>' +
+    '<span class="exam-countdown ' + countdownClass + '">' + countdownText + '</span></div>' +
+    (isPassed && isUnscored ? buildExamScoreInputs(e.id) : '');
+
+  // Score save button
+  if (isPassed && isUnscored) {
+    var saveBtn = card.querySelector('.exam-score-save');
+    if (saveBtn) {
+      saveBtn.onclick = function() { saveExamScore(e.id); };
+    }
+  }
+
+  // Tap = edit, long press = delete
+  var pressTimer = null;
+  card.addEventListener('touchstart', function() {
+    pressTimer = setTimeout(function() {
+      pressTimer = null;
+      showDelPopup('Delete "' + e.name + '"?', '', function() {
+        state.exams = state.exams.filter(function(x) { return x.id !== e.id; });
+        save(); renderLedger(); renderDashboard(); toast('Deleted','ok');
+      });
+    }, 500);
+  }, {passive:true});
+  card.addEventListener('touchmove', function() {
+    if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+  }, {passive:true});
+  card.addEventListener('touchend', function() {
+    if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; openExamEdit(e.id); }
+  }, {passive:true});
+  card.addEventListener('mousedown', function() {
+    pressTimer = setTimeout(function() {
+      pressTimer = null;
+      showDelPopup('Delete "' + e.name + '"?', '', function() {
+        state.exams = state.exams.filter(function(x) { return x.id !== e.id; });
+        save(); renderLedger(); renderDashboard(); toast('Deleted','ok');
+      });
+    }, 500);
+  });
+  card.addEventListener('mouseup', function() {
+    if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; openExamEdit(e.id); }
+  });
+
+  return card;
+}
+
+function buildExamScoreInputs(eid) {
+  return '<div class="exam-score-inputs">' +
+    '<div style="font-size:0.8em;font-weight:700;color:var(--red);margin-bottom:8px;">Log your score for this exam</div>' +
+    '<div style="display:flex;gap:8px;align-items:center;">' +
+    '<input class="input" type="number" placeholder="Score" id="escore-' + eid + '" style="flex:1;" onclick="event.stopPropagation()"/>' +
+    '<span style="color:var(--muted);">of</span>' +
+    '<input class="input" type="number" placeholder="Total" id="etotal-' + eid + '" style="flex:1;" onclick="event.stopPropagation()"/>' +
+    '</div>' +
+    '<button class="btn btn-primary btn-full exam-score-save" style="margin-top:8px;" onclick="saveExamScore(\'' + eid + '\');event.stopPropagation();">Save Score</button>' +
+    '</div>';
+}
+
+function saveExamScore(eid) {
+  var scoreEl = document.getElementById('escore-' + eid);
+  var totalEl = document.getElementById('etotal-' + eid);
+  if (!scoreEl || !totalEl) return;
+  var score = parseInt(scoreEl.value);
+  var total = parseInt(totalEl.value);
+  if (isNaN(score) || isNaN(total) || total === 0) { toast('Enter valid score','err'); return; }
+  var exam = state.exams.filter(function(e) { return e.id === eid; })[0];
+  if (exam) { exam.score = score; exam.total = total; save(); renderLedger(); toast('Score saved','ok'); }
+}
+
+function openExamEdit(eid) {
+  editingExamId = eid;
+  var exam = state.exams.filter(function(e) { return e.id === eid; })[0];
+  if (!exam) return;
+  document.getElementById('ee-name').value = exam.name;
+  document.getElementById('ee-date').value = exam.date;
+  document.getElementById('ee-tag-input').value = exam.tagTitle || '';
+  document.getElementById('ee-tag-id').value = exam.tagId || '';
+  openModal('exam-edit-modal');
+}
+
+function saveExamEdit() {
+  var exam = state.exams.filter(function(e) { return e.id === editingExamId; })[0];
+  if (!exam) return;
+  exam.name = document.getElementById('ee-name').value.trim() || exam.name;
+  exam.date = document.getElementById('ee-date').value || exam.date;
+  exam.tagTitle = document.getElementById('ee-tag-input').value.trim();
+  exam.tagId = document.getElementById('ee-tag-id').value;
+  save(); closeModal('exam-edit-modal'); renderLedger(); renderDashboard();
+  toast('Exam updated','ok');
+}
+
+function toggleOldExams() {
+  oldExamsVisible = !oldExamsVisible;
+  var old = document.getElementById('exams-list-old');
+  var btn = document.getElementById('old-exams-btn');
+  if (old) old.style.display = oldExamsVisible ? 'block' : 'none';
+  if (btn) btn.textContent = oldExamsVisible ? 'Hide older exams' : 'Show older exams';
+}
+
+/* ============================================================
+   LEDGER - TESTS
+   ============================================================ */
+function setCoverageAll(val) {
+  coverageAll = val;
+  document.getElementById('coverage-all-btn').classList.toggle('active', val);
+  document.getElementById('coverage-select-btn').classList.toggle('active', !val);
+  var cl = document.getElementById('test-coverage-list');
+  if (!val) { cl.style.display = 'block'; buildCoverageList(); }
+  else cl.style.display = 'none';
+}
+
+function buildCoverageList() {
+  var flat = flattenTree(state.tree);
+  var cl = document.getElementById('test-coverage-list');
+  cl.innerHTML = '';
+  if (flat.length === 0) { cl.innerHTML = '<div style="padding:10px;font-size:0.85em;color:var(--muted);">No topics in plan yet.</div>'; return; }
+  for (var i = 0; i < flat.length; i++) {
+    var n = flat[i];
+    var item = document.createElement('div');
+    item.className = 'coverage-item';
+    var cbId = 'cov-' + n.id;
+    item.innerHTML = '<input type="checkbox" id="' + cbId + '" checked/><label for="' + cbId + '">' + escHtml(n.title) + '</label>';
+    cl.appendChild(item);
+  }
+}
+
+function saveTest() {
+  haptic(20);
+  var name = document.getElementById('test-name-input').value.trim();
+  var date = document.getElementById('test-date-input').value;
+  var score = parseInt(document.getElementById('test-score-input').value);
+  var total = parseInt(document.getElementById('test-total-input').value);
+  if (!name || isNaN(score) || isNaN(total) || total === 0) { toast('Fill all test fields','err'); return; }
+
+  var coveredTopics = null;
+  if (!coverageAll) {
+    var flat = flattenTree(state.tree);
+    coveredTopics = [];
+    for (var i = 0; i < flat.length; i++) {
+      var cb = document.getElementById('cov-' + flat[i].id);
+      if (cb && cb.checked) coveredTopics.push(flat[i].id);
+    }
+  }
+
+  state.tests.push({id:uid(), name:name, date:date||todayStr(), score:score, total:total, coveredTopics:coveredTopics});
+  save();
+  document.getElementById('test-name-input').value = '';
+  document.getElementById('test-date-input').value = '';
+  document.getElementById('test-score-input').value = '';
+  document.getElementById('test-total-input').value = '';
+  setCoverageAll(true);
+  renderLedger();
+  toast('Test logged','ok');
+}
+
+function renderTests() {
+  var list = document.getElementById('tests-list');
+  if (!list) return;
+  list.innerHTML = '';
+  if (state.tests.length === 0) { document.getElementById('test-stats-card').style.display = 'none'; return; }
+  document.getElementById('test-stats-card').style.display = 'block';
+  var total = 0;
+  for (var i = 0; i < state.tests.length; i++) total += (state.tests[i].score/state.tests[i].total)*100;
+  var avg = Math.round(total/state.tests.length);
+  document.getElementById('avg-score-display').textContent = avg + '%';
+  var trend = '';
+  if (state.tests.length >= 2) {
+    var last2 = state.tests.slice(-2);
+    var p1 = (last2[0].score/last2[0].total)*100;
+    var p2 = (last2[1].score/last2[1].total)*100;
+    trend = p2 > p1 ? '📈' : p2 < p1 ? '📉' : '➡️';
+  }
+  document.getElementById('score-trend').textContent = trend;
+  var sorted = state.tests.slice().sort(function(a,b) { return b.date < a.date ? -1 : 1; });
+  for (var j = 0; j < sorted.length; j++) {
+    var t = sorted[j];
+    var pct = Math.round((t.score/t.total)*100);
+    var card = document.createElement('div');
+    card.className = 'exam-card';
+    var covNote = t.coveredTopics ? ' - ' + t.coveredTopics.length + ' topics' : ' - All topics';
+    card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+      '<div><div class="exam-title">' + escHtml(t.name) + '</div>' +
+      '<div class="exam-meta"><span>' + t.date + '</span><span>' + t.score + '/' + t.total + covNote + '</span></div></div>' +
+      '<span class="exam-countdown ' + (pct>=70?'ok':pct>=50?'warn':'soon') + '">' + pct + '%</span></div>';
+    (function(tid, tname) {
+      var pt = null;
+      card.addEventListener('touchstart', function() {
+        pt = setTimeout(function() {
+          pt = null;
+          showDelPopup('Delete "' + tname + '"?', '', function() {
+            state.tests = state.tests.filter(function(x) { return x.id !== tid; });
+            save(); renderLedger(); toast('Deleted','ok');
+          });
+        }, 500);
+      }, {passive:true});
+      card.addEventListener('touchmove', function() {
+        if (pt) { clearTimeout(pt); pt = null; }
+      }, {passive:true});
+      card.addEventListener('touchend', function() { if (pt) { clearTimeout(pt); pt = null; } }, {passive:true});
+      card.addEventListener('mousedown', function() {
+        pt = setTimeout(function() {
+          pt = null;
+          showDelPopup('Delete "' + tname + '"?', '', function() {
+            state.tests = state.tests.filter(function(x) { return x.id !== tid; });
+            save(); renderLedger(); toast('Deleted','ok');
+          });
+        }, 500);
+      });
+      card.addEventListener('mouseup', function() { if (pt) { clearTimeout(pt); pt = null; } });
+    })(t.id, t.name);
+    list.appendChild(card);
+  }
+}
+
+function renderPaceAnalysis() {
+  var el = document.getElementById('pace-text');
+  if (!el) return;
+  var flat = flattenTree(state.tree);
+  if (flat.length === 0) { el.textContent = 'Add topics with confidence scores to see your pace analysis.'; return; }
+  var avgConf = 0;
+  for (var i = 0; i < flat.length; i++) avgConf += (flat[i].conf||0);
+  avgConf = (avgConf/flat.length).toFixed(1);
+  var lowCount = flat.filter(function(n) { return n.conf <= 2; }).length;
+  var today = todayStr();
+  var upcoming = state.exams.filter(function(e) { return daysBetween(today,e.date) >= 0; });
+  upcoming.sort(function(a,b) { return daysBetween(today,a.date) - daysBetween(today,b.date); });
+  var lines = ['Average confidence: ' + avgConf + '/5', 'Topics needing work: ' + lowCount + ' of ' + flat.length];
+  if (upcoming.length > 0) {
+    var next = upcoming[0];
+    var dLeft = daysBetween(today, next.date);
+    lines.push('Days until ' + next.name + ': ' + dLeft);
+    var sessNeeded = Math.ceil(lowCount*1.5);
+    var sessPerWeek = Math.ceil(sessNeeded / Math.max(1, Math.floor(dLeft/7)));
+    if (dLeft < 7 && lowCount > 3) lines.push('WARNING: ' + lowCount + ' topics still below confidence 3 with only ' + dLeft + ' days left.');
+    else if (sessPerWeek > 0) lines.push('Recommended: ' + sessPerWeek + ' session(s) per week to be ready.');
+  }
+  el.textContent = lines.join('\n');
+}
+
+/* ============================================================
+   REPORT CARD
+   ============================================================ */
+function selectReportRange(el) {
+  document.querySelectorAll('#report-range-pills .pill').forEach(function(p) { p.classList.remove('active'); });
+  el.classList.add('active');
+  reportRange = el.getAttribute('data-range');
+}
+
+function compileReport() {
+  var today = new Date();
+  var cutoff = new Date();
+  if (reportRange === 'month') cutoff.setMonth(cutoff.getMonth()-1);
+  else if (reportRange === '3months') cutoff.setMonth(cutoff.getMonth()-3);
+  else if (reportRange === 'year') cutoff.setFullYear(cutoff.getFullYear()-1);
+  else cutoff = new Date('2000-01-01');
+
+  var totalH = 0;
+  var keys = Object.keys(state.heatmap);
+  for (var k = 0; k < keys.length; k++) {
+    if (new Date(keys[k]) >= cutoff) totalH += (getHeatDay(keys[k]).hours || 0);
+  }
+  var flat = flattenTree(state.tree);
+  var avgConf = 0;
+  if (flat.length > 0) { for (var i = 0; i < flat.length; i++) avgConf += (flat[i].conf||0); avgConf = (avgConf/flat.length).toFixed(1); }
+  var tests = state.tests.filter(function(t) { return new Date(t.date) >= cutoff; });
+  var avgScore = '-';
+  if (tests.length > 0) {
+    var sum = 0;
+    for (var j = 0; j < tests.length; j++) sum += (tests[j].score/tests[j].total)*100;
+    avgScore = Math.round(sum/tests.length) + '%';
+  }
+  var streak = calcStreak();
+  var rangeName = reportRange === 'month' ? 'Past Month' : reportRange === '3months' ? 'Past 3 Months' : reportRange === 'year' ? 'Past Year' : 'Full Session';
+  var report = [
+    'PAPAZ - ACADEMIC REPORT CARD',
+    'Student: ' + state.user.name,
+    'Subject: ' + state.user.subject,
+    'Period: ' + rangeName,
+    'Generated: ' + todayStr(),
+    '',
+    '--- STUDY HOURS ---',
+    'Total hours logged: ' + totalH + 'h',
+    'Current streak: ' + streak + ' days',
+    '',
+    '--- SYLLABUS COVERAGE ---',
+    'Total topics: ' + flat.length,
+    'Average confidence: ' + avgConf + '/5',
+    'Topics ready (conf 4-5): ' + flat.filter(function(n){return n.conf>=4;}).length,
+    'Topics needing work: ' + flat.filter(function(n){return n.conf<=2;}).length,
+    '',
+    '--- TEST PERFORMANCE ---',
+    'Tests logged: ' + tests.length,
+    'Average score: ' + avgScore,
+    '',
+    '--- NOTES ---',
+    'Vault notes captured: ' + state.notes.length,
+    '',
+    'All data is private and stored only on this device.'
+  ].join('\n');
+  document.getElementById('report-body').textContent = report;
+  openModal('report-modal');
+}
+
+function shareReport() {
+  var text = document.getElementById('report-body').textContent;
+  shareOrDownload(text, 'papaz_report_' + todayStr() + '.txt');
+}
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+function renderSettings() {
+  var s = state.settings;
+  var dt = document.getElementById('dark-toggle');
+  if (dt) { s.dark !== false ? dt.classList.add('on') : dt.classList.remove('on'); }
+  var nt = document.getElementById('notif-toggle');
+  if (nt) { s.notifOn !== false ? nt.classList.add('on') : nt.classList.remove('on'); }
+  var qs = document.getElementById('quiet-start'); if (qs) qs.value = s.quietStart || '22:00';
+  var qe = document.getElementById('quiet-end'); if (qe) qe.value = s.quietEnd || '07:00';
+  document.querySelectorAll('.swatch').forEach(function(sw) {
+    sw.classList.toggle('active', sw.getAttribute('data-accent') === (s.accent||'silver'));
+  });
+  document.querySelectorAll('#usertype-pills .pill').forEach(function(p) {
+    if (p.getAttribute('data-ut')) p.classList.toggle('active', p.getAttribute('data-ut') === state.user.type);
+  });
+  renderThreshEditor();
+  renderPermCard();
+  renderUpcomingAlarms(false);
+  var ht = document.getElementById('haptic-toggle');
+  if (ht) { s.haptic ? ht.classList.add('on') : ht.classList.remove('on'); }
+}
+
+function openAutostartGuide() {
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:600;display:flex;align-items:center;justify-content:center;padding:24px;';
+  overlay.innerHTML =
+    '<div style="background:var(--card);border:1px solid var(--amber);border-radius:var(--radius);padding:22px;max-width:360px;width:100%;max-height:80vh;overflow-y:auto;">' +
+    '<div style="font-size:0.65em;text-transform:uppercase;letter-spacing:0.12em;color:var(--amber);margin-bottom:8px;">Battery Saver Setup</div>' +
+    '<div style="font-weight:700;font-size:1em;margin-bottom:12px;line-height:1.4;">Let Papaz wake up when it needs to.</div>' +
+    '<div style="font-size:0.83em;color:var(--muted);line-height:1.6;margin-bottom:14px;">Android and MIUI aggressively kill background apps. Without these two steps, alarms may not fire while the phone is asleep.</div>' +
+    '<div style="font-size:0.8em;font-weight:700;color:var(--text);margin-bottom:8px;">Step 1 - Autostart (Xiaomi / MIUI)</div>' +
+    '<div style="font-size:0.8em;color:var(--muted);line-height:1.7;margin-bottom:14px;">' +
+    '1. Open <b style="color:var(--text);">Settings</b><br>' +
+    '2. Tap <b style="color:var(--text);">Apps</b><br>' +
+    '3. Find and tap <b style="color:var(--text);">Papaz</b><br>' +
+    '4. Tap <b style="color:var(--text);">Autostart</b><br>' +
+    '5. Toggle it <b style="color:var(--green);">ON</b>' +
+    '</div>' +
+    '<div style="font-size:0.8em;font-weight:700;color:var(--text);margin-bottom:8px;">Step 2 - Battery Saver Exclusion</div>' +
+    '<div style="font-size:0.8em;color:var(--muted);line-height:1.7;margin-bottom:18px;">' +
+    '1. Open <b style="color:var(--text);">Settings</b><br>' +
+    '2. Tap <b style="color:var(--text);">Battery & performance</b><br>' +
+    '3. Tap <b style="color:var(--text);">App battery saver</b><br>' +
+    '4. Find <b style="color:var(--text);">Papaz</b><br>' +
+    '5. Set to <b style="color:var(--green);">No restrictions</b>' +
+    '</div>' +
+    '<button style="width:100%;padding:11px;background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);cursor:pointer;font-size:0.9em;" id="autostart-close">Done</button>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  document.getElementById('autostart-close').onclick = function() { document.body.removeChild(overlay); };
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) document.body.removeChild(overlay); });
+}
+
+function renderThreshEditor() {
+  var el = document.getElementById('thresh-editor');
+  if (!el) return;
+  var s = state.settings;
+  var labels = [['Mild nudge', 'threshMild'], ['Fuming', 'threshMed'], ['Disownment', 'threshExtreme']];
+  el.innerHTML = '';
+  for (var i = 0; i < labels.length; i++) {
+    var row = document.createElement('div');
+    row.className = 'thresh-row';
+    var key = labels[i][1];
+    var val = s[key] || (i===0?3:i===1?5:7);
+    row.innerHTML = '<div class="thresh-label">' + labels[i][0] + '</div>' +
+      '<input class="thresh-input" type="number" min="1" max="60" value="' + val + '" data-key="' + key + '" onchange="saveThresh(this)"/>';
+    el.appendChild(row);
+  }
+}
+
+function saveThresh(input) {
+  var val = parseInt(input.value);
+  if (isNaN(val) || val < 1) return;
+  state.settings[input.getAttribute('data-key')] = val;
+  save();
+}
+
+function applyThreshPreset(type) {
+  var presets = {school:[3,5,7], college:[6,8,10], professional:[7,10,14]};
+  var p = presets[type] || presets.school;
+  state.settings.threshMild = p[0];
+  state.settings.threshMed = p[1];
+  state.settings.threshExtreme = p[2];
+  if (type) { state.user.type = type; }
+  save();
+  renderThreshEditor();
+  toast('Preset applied','ok');
+}
+
+function toggleNotifications() {
+  haptic(15);
+  state.settings.notifOn = !state.settings.notifOn;
+  var t = document.getElementById('notif-toggle');
+  if (t) { state.settings.notifOn ? t.classList.add('on') : t.classList.remove('on'); }
+  save();
+}
+
+function saveSettings() {
+  var qs = document.getElementById('quiet-start');
+  var qe = document.getElementById('quiet-end');
+  if (qs) state.settings.quietStart = qs.value;
+  if (qe) state.settings.quietEnd = qe.value;
+  save();
+}
+
+function renderUpcomingAlarms(expanded) {
+  var card = document.getElementById('upcoming-alarms-card');
+  if (!card) return;
+  var alarms = [];
+  try { alarms = JSON.parse(localStorage.getItem('papaz_alarms') || '[]'); } catch(e) {}
+  var now = Date.now();
+  alarms = alarms.filter(function(a) { return a.fireAt > now; });
+  alarms.sort(function(a, b) { return a.fireAt - b.fireAt; });
+
+  if (alarms.length === 0) {
+    card.innerHTML = '<div style="font-size:0.83em;color:var(--muted);text-align:center;padding:4px 0;">No upcoming alarms scheduled.</div>';
+    return;
+  }
+
+  var cutoff = expanded ? 14 * 86400000 : 3;
+  var shown = expanded
+    ? alarms.filter(function(a) { return a.fireAt - now < cutoff; })
+    : alarms.slice(0, cutoff);
+
+  var html = '';
+  for (var i = 0; i < shown.length; i++) {
+    var a = shown[i];
+    var d = new Date(a.fireAt);
+    var label = d.toLocaleDateString(undefined, {month:'short', day:'numeric'}) + ' ' +
+      d.toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit'});
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;' +
+      (i < shown.length - 1 ? 'border-bottom:0.5px solid var(--border);' : '') + '">' +
+      '<div style="font-size:0.83em;color:var(--text);flex:1;padding-right:8px;">' + escHtml(a.title || 'Papaz') + '</div>' +
+      '<div style="font-size:0.75em;color:var(--muted);white-space:nowrap;">' + label + '</div></div>';
+  }
+
+  if (!expanded && alarms.length > 3) {
+    html += '<div id="alarms-expand-hint" style="font-size:0.75em;color:var(--accent);text-align:center;padding-top:8px;cursor:pointer;">hold to see all (' + alarms.length + ')</div>';
+  }
+
+  card.innerHTML = html;
+
+  // Long press to expand
+  var hint = document.getElementById('alarms-expand-hint');
+  if (hint) {
+    var et = null;
+    hint.addEventListener('touchstart', function() {
+      et = setTimeout(function() { et = null; renderUpcomingAlarms(true); }, 500);
+    }, {passive:true});
+    hint.addEventListener('touchmove', function() { if (et) { clearTimeout(et); et = null; } }, {passive:true});
+    hint.addEventListener('touchend', function() { if (et) { clearTimeout(et); et = null; } }, {passive:true});
+  }
+}
+
+function renderPermCard() {
+  var card = document.getElementById('perm-card');
+  if (!card) return;
+  card.innerHTML = '';
+
+  // Network - always green, no runtime request needed
+  var netRow = document.createElement('div');
+  netRow.className = 'card-row';
+  netRow.innerHTML = '<div><div style="font-weight:600;font-size:0.9em;">Network</div>' +
+    '<div style="font-size:0.75em;color:var(--muted);">Required for export and sharing</div></div>' +
+    '<div class="perm-dot green"></div>';
+  card.appendChild(netRow);
+
+  // Notifications row - uses Java bridge result, not WebView Notification.permission
+  var notifGranted = window._appNotifGranted !== false;
+  var notifRow = document.createElement('div');
+  notifRow.className = 'card-row';
+  notifRow.innerHTML = '<div><div style="font-weight:600;font-size:0.9em;">Notifications</div>' +
+    '<div style="font-size:0.75em;color:var(--muted);">Exam reminders and study nudges</div></div>' +
+    '<div class="perm-dot ' + (notifGranted ? 'green' : 'amber') + '" id="notif-perm-dot"></div>';
+  if (!notifGranted) {
+    notifRow.querySelector('.perm-dot').addEventListener('click', function() {
+      scheduleNotificationSchedule();
+      toast('check your notification settings', '');
+    });
+  }
+  card.appendChild(notifRow);
+
+  // Storage - always green
+  var storRow = document.createElement('div');
+  storRow.className = 'card-row';
+  storRow.innerHTML = '<div><div style="font-weight:600;font-size:0.9em;">Storage</div>' +
+    '<div style="font-size:0.75em;color:var(--muted);">Saving your workspace on device</div></div>' +
+    '<div class="perm-dot green"></div>';
+  card.appendChild(storRow);
+
+  // Battery Saver / Autostart - amber, tap opens guide (Xiaomi/MIUI critical)
+  var batRow = document.createElement('div');
+  batRow.className = 'card-row';
+  batRow.style.cursor = 'pointer';
+  batRow.innerHTML = '<div><div style="font-weight:600;font-size:0.9em;">Battery Saver</div>' +
+    '<div style="font-size:0.75em;color:var(--muted);">Allow alarms to fire while phone sleeps</div></div>' +
+    '<div style="font-size:0.72em;font-weight:700;color:var(--amber);letter-spacing:0.05em;">TAP TO SET UP</div>';
+  batRow.addEventListener('click', function() { openAutostartGuide(); });
+  card.appendChild(batRow);
+
+  // Refresh notification dot via Java bridge
+  var AP = getAlarmPlugin();
+  if (AP) {
+    AP.areNotificationsEnabled().then(function(result) {
+      window._appNotifGranted = result.enabled;
+      var dot = document.getElementById('notif-perm-dot');
+      if (dot) dot.className = 'perm-dot ' + (result.enabled ? 'green' : 'amber');
+    });
+  }
+}
+
+/* ============================================================
+   ALARM SYSTEM - JS SIDE
+   Saves alarm list to SharedPreferences via AlarmPlugin bridge.
+   AlarmReceiver reads SharedPreferences - never localStorage.
+   ============================================================ */
+function getAlarmPlugin() {
+  if (!window.Capacitor) return null;
+  var P = window.Capacitor.Plugins;
+  return (P && P.AlarmPlugin) ? P.AlarmPlugin : null;
+}
+
+function pushAlarm(alarm) {
+  var AP = getAlarmPlugin();
+  if (!AP) return;
+  var existing = [];
+  try { existing = JSON.parse(localStorage.getItem('papaz_alarms') || '[]'); } catch(e) {}
+  existing.push(alarm);
+  localStorage.setItem('papaz_alarms', JSON.stringify(existing));
+  AP.saveAlarms({json: JSON.stringify(existing)}).then(function() {
+    AP.scheduleNext();
+  });
+}
+
+function scheduleNotificationSchedule() {
+  var AP = getAlarmPlugin();
+  if (!AP) return;
+
+  // Check real notification status via Java bridge - WebView lies
+  AP.areNotificationsEnabled().then(function(result) {
+    window._appNotifGranted = result.enabled;
+
+    if (!result.enabled) return; // nothing to schedule
+    if (!state.settings.notifOn) return;
+
+    var now = Date.now();
+    var installDate = state.settings.installDate;
+    var alarms = [];
+
+    // 1. WELCOME NOTIFICATION - fires once on first launch, 5s delay
+    if (!localStorage.getItem('papaz_welcome_sent')) {
+      localStorage.setItem('papaz_welcome_sent', '1');
+      alarms.push({
+        notifId: 1001,
+        fireAt: now + 5000,
+        title: 'Papaz',
+        body: 'papaz is ready. time to make your syllabus regret existing.'
+      });
+    }
+
+    // 2. IDLE NUDGE - fires at lastLog + threshMild days, repeatable each idle period
+    var lastLog = state.settings.lastLog;
+    var idleKey = 'papaz_idle_scheduled';
+    if (lastLog) {
+      var daysSince = daysBetween(lastLog, todayStr());
+      var thresh = state.settings.threshMild || 3;
+      if (daysSince < thresh) {
+        // User is active - clear scheduled flag so next idle period reschedules
+        localStorage.removeItem(idleKey);
+      } else if (!localStorage.getItem(idleKey)) {
+        // Already idle - schedule nudge for thresh days after lastLog
+        localStorage.setItem(idleKey, '1');
+        var lastLogMs = new Date(lastLog).getTime();
+        var nudgeAt = lastLogMs + (thresh * 86400000);
+        // If that time already passed, fire soon (user opened app while already overdue)
+        if (nudgeAt < now) nudgeAt = now + 10000;
+        alarms.push({
+          notifId: 1002,
+          fireAt: nudgeAt,
+          title: 'Papaz',
+          body: 'your records are waiting. the exam does not wait.'
+        });
+      }
+    } else if (!localStorage.getItem(idleKey)) {
+      // No log ever - nudge after threshMild days from install
+      var thresh2 = state.settings.threshMild || 3;
+      var installMs2 = installDate ? new Date(installDate).getTime() : now;
+      var nudgeAt2 = installMs2 + (thresh2 * 86400000);
+      if (nudgeAt2 > now) {
+        localStorage.setItem(idleKey, '1');
+        alarms.push({
+          notifId: 1002,
+          fireAt: nudgeAt2,
+          title: 'Papaz',
+          body: 'your records are waiting. the exam does not wait.'
+        });
+      }
+    }
+
+    // 3. PATREON NUDGE - one-time Android notification, 45 days after install
+    if (installDate && !localStorage.getItem('papaz_patreon_notif_sent')) {
+      var daysSinceInstall = daysBetween(installDate, todayStr());
+      if (daysSinceInstall >= 45) {
+        localStorage.setItem('papaz_patreon_notif_sent', '1');
+        alarms.push({
+          notifId: 1003,
+          fireAt: now + 10000,
+          title: 'Papaz',
+          body: '45 days. if this helped you pass something - patreon.com/jibunshidai81. one tap.'
+        });
+      } else {
+        // Schedule it for 45 days from install
+        var installMs = new Date(installDate).getTime();
+        var targetMs = installMs + (45 * 86400000);
+        if (targetMs > now) {
+          alarms.push({
+            notifId: 1003,
+            fireAt: targetMs,
+            title: 'Papaz',
+            body: '45 days. if this helped you pass something - patreon.com/jibunshidai81. one tap.'
+          });
+        }
+      }
+    }
+
+    if (alarms.length === 0) return;
+
+    // Merge with existing saved alarms (avoid duplicates by notifId)
+    var existing = [];
+    try { existing = JSON.parse(localStorage.getItem('papaz_alarms') || '[]'); } catch(e) {}
+    var existingIds = {};
+    for (var i = 0; i < existing.length; i++) existingIds[existing[i].notifId] = true;
+    for (var j = 0; j < alarms.length; j++) {
+      if (!existingIds[alarms[j].notifId]) existing.push(alarms[j]);
+    }
+    localStorage.setItem('papaz_alarms', JSON.stringify(existing));
+    AP.saveAlarms({json: JSON.stringify(existing)}).then(function() {
+      AP.scheduleNext();
+    });
+  });
+}
+
+// 4. FIRST NOTIFICATION GRANT CONFIRMATION - tappable toast, fires once
+function checkNotifGrantedToast() {
+  if (localStorage.getItem('papaz_notif_toast_shown')) return;
+  var AP = getAlarmPlugin();
+  if (!AP) return;
+  AP.areNotificationsEnabled().then(function(result) {
+    window._appNotifGranted = result.enabled;
+    if (result.enabled && !localStorage.getItem('papaz_notif_toast_shown')) {
+      localStorage.setItem('papaz_notif_toast_shown', '1');
+      setTimeout(function() {
+        toast('notifications active - tap to support', 'ok');
+        var t = document.getElementById('toast');
+        if (t) {
+          t.style.cursor = 'pointer';
+          t.style.pointerEvents = 'auto';
+          t.onclick = function() {
+            t.style.pointerEvents = 'none';
+            showPage('settings', document.getElementById('tab-settings'));
+          };
+        }
+      }, 3500);
+    }
+  });
+}
+
+/* ============================================================
+   60 DAY REVIEW NUDGE
+   ============================================================ */
+function check60DayNudge() {
+  if (localStorage.getItem('papaz_60day_shown')) return;
+  var installDate = state.settings.installDate;
+  if (!installDate) return;
+  var daysSince = daysBetween(installDate, todayStr());
+  if (daysSince < 60) return;
+  localStorage.setItem('papaz_60day_shown', '1');
+  show60DayModal();
+}
+
+function show60DayModal() {
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:600;display:flex;align-items:center;justify-content:center;padding:24px;';
+  var box = document.createElement('div');
+  box.style.cssText = 'background:var(--card);border:1px solid var(--amber);border-radius:var(--radius);padding:24px;max-width:360px;width:100%;';
+  box.innerHTML = '<div style="font-size:0.65em;text-transform:uppercase;letter-spacing:0.12em;color:var(--amber);margin-bottom:8px;">60 Days</div>' +
+    '<div style="font-weight:700;font-size:1.1em;margin-bottom:12px;">60 days. You actually stayed.</div>' +
+    '<div style="font-size:0.88em;color:var(--text2);line-height:1.6;margin-bottom:16px;">I did not think you would last this long. Genuinely. If Papaz helped you pass something, or even just kept you honest - consider supporting on Patreon. It keeps this free for the next student who needs it.</div>' +
+    '<a href="https://www.patreon.com/jibunshidai81" target="_blank" style="display:block;width:100%;padding:12px;text-align:center;background:var(--amber);color:#0a0a0b;font-weight:700;border-radius:var(--radius-sm);text-decoration:none;margin-bottom:10px;box-sizing:border-box;">SUPPORT ON PATREON -></a>' +
+    '<button style="width:100%;padding:12px;background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--muted);cursor:pointer;font-size:0.9em;" id="nudge-dismiss">Maybe later</button>';
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  document.getElementById('nudge-dismiss').onclick = function() { document.body.removeChild(overlay); };
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) document.body.removeChild(overlay); });
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+var _origStartApp = startApp;
+startApp = function() {
+  _origStartApp();
+  setTimeout(check60DayNudge, 2000);
+  setTimeout(scheduleNotificationSchedule, 1500);
+  setTimeout(checkNotifGrantedToast, 4000);
+  setTimeout(applyNavBarColor, 500);
+};
+
+/* ============================================================
+   FINISH
+   ============================================================ */
+// Close overlays on overlay tap already handled in setupModalCloseListeners
+
+</script>
+</body>
+</html>

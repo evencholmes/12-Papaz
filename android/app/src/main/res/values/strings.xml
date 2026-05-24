@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Papaz</string>
+    <string name="title_activity_main">Papaz</string>
+    <string name="package_name">com.papaz.examos</string>
+    <string name="custom_url_scheme">com.papaz.examos</string>
+</resources>
