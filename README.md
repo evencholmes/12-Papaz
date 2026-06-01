@@ -128,6 +128,7 @@ You got this far. Exam's not going to study itself.
 Direct install. No Play Store. No account. No nonsense.
 **[Direct Download](https://github.com/evencholmes/12-Papaz/releases/download/APK/12.Papaz.apk)**
 
+**[Test the webapp here](https://12-papaz-app.netlify.app)** 
 ---
 
 **[Support on Patreon](https://www.patreon.com/jibunshidai81)**
