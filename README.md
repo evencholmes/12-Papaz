@@ -117,6 +117,16 @@ If something breaks — open an issue. If it helps you pass — tell someone who
   </tr>
 </table>
 
+---
+
+**[Support on Patreon](https://www.patreon.com/jibunshidai81)**
+PAPAZ is free and will stay free. If it helped you stay on top of your work — a dollar goes a long way toward keeping independent tools like this alive. A few other free apps live on that page too. Same deal, same spirit.
+
+If money is tight, sharing costs nothing and means just as much.
+
+---
+
+*Built by [@Jibunshidai81](https://x.com/Jibunshidai81) — engineered with Claude by Anthropic, emotionally supervised by John A. Sherlock*
 
 ---
 
@@ -129,16 +139,6 @@ Direct install. No Play Store. No account. No nonsense.
 **[Direct Download](https://github.com/evencholmes/12-Papaz/releases/download/APK/12.Papaz.apk)**
 
 **[Test the webapp here](https://12-papaz-app.netlify.app)** 
----
-
-**[Support on Patreon](https://www.patreon.com/jibunshidai81)**
-PAPAZ is free and will stay free. If it helped you stay on top of your work — a dollar goes a long way toward keeping independent tools like this alive. A few other free apps live on that page too. Same deal, same spirit.
-
-If money is tight, sharing costs nothing and means just as much.
-
----
-
-*Built by [@Jibunshidai81](https://x.com/Jibunshidai81) — engineered with Claude by Anthropic, emotionally supervised by John A. Sherlock*
 
 ---
 
